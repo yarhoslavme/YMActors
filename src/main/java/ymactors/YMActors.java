@@ -57,8 +57,17 @@ public class YMActors {
             for (int i = 0; i < 100000; i++) {
                 IActorRef ca = ac.createActor("CONTADOR" + i, new ContadorActor(1000));
             }
-
-            ac.broadcast("contar", EmptyActor.getInstance());
+            IActorRef tmpActor = ac.findActor("CONTADOR100");
+            tmpActor.getContext().createActor("OTRO", null);
+            System.out.println(ac.findActor("CONTADOR100").getName());
+            System.out.println(ac.findActor("OTRO").getName());
+            tmpActor = ac.findActor("CONTADOR100/OTRO");
+            tmpActor.getContext().createActor("OTRO", null);
+            tmpActor.getContext().createActor("PERRO", null);
+            tmpActor = ac.findActor("CONTADOR100/OTRO");
+            System.out.println(tmpActor.getContext().findActor("OTRO").getName());
+            System.out.println(tmpActor.getContext().findActor("PERRO").getName());
+            //ac.broadcast("contar", EmptyActor.getInstance());
 
         } catch (Exception e) {
             System.out.println(e.getMessage());

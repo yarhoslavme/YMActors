@@ -32,20 +32,19 @@ public class DefaultActorContext implements IActorContext {
         IActorRef newActor = new DefaultActor.ActorBuilder(pName).handler(pHandler).context(newContext).build().start();
         //TODO: Check what to do whether the name already exists. should it raise an exception?
         children.putIfAbsent(pName, newActor);
-        //TODO: Report new actor in Container too.  
+        //TODO: Report new child in Container too.  
         return newActor;
     }
 
     @Override
     public void killActor(IActorRef pActor) {
         children.remove(pActor.getName());
-        //TODO: Kill actor in Container too.
+        //TODO: Kill child in Container too.
         //TODO: Check lifecicle of actor
     }
 
     @Override
     public IActorRef findActor(String pName) {
-        //TODO: Delegate findactor to Container.
         IActorRef tmpActor;
         if (children.containsKey(pName)) {
             tmpActor = children.get(pName);

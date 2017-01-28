@@ -112,6 +112,7 @@ public class DefaultActor implements IActorRef {
     }
 
     private void handleException(Exception e) {
+        //TODO Send the exceptios to his father
         LOGGER.log(Level.WARNING, "Actor {0} throws an exception: {1}", new Object[]{name, e});
     }
 

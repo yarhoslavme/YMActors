@@ -8,7 +8,6 @@ import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
 import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
 import static java.lang.System.currentTimeMillis;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
@@ -33,7 +32,6 @@ public final class ActorsContainer implements IActorContext {
     private final AtomicBoolean isAlive = new AtomicBoolean(false);
     private final ExecutorService workpool = new ForkJoinPool();
     private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(Constants.SCHEDULESIZE);
-    private final ConcurrentHashMap<String, IActorRef> systemActors = new ConcurrentHashMap<>();
     private final long startTime = currentTimeMillis();
     private IActorRef systemActor;
 
@@ -93,19 +91,45 @@ public final class ActorsContainer implements IActorContext {
     @Override
     public void killActor(IActorRef pActor) {
         //TODO: Kill actor in Actorscontainer is especial.
-        systemActors.remove(pActor.getName());
+        systemActor.getContext().killActor(pActor);
     }
 
     @Override
     public IActorRef findActor(String pName) {
-        return systemActors.get(pName);
+        //TODO: Find an actor by his name across entire system
+        if (pName == null) {
+            return EmptyActor.getInstance();
+        }
+
+        if (!pName.contains("/")) {
+            IActorRef tmpActor = systemActor.getContext().getChildren().get(pName);
+            if (tmpActor == null) {
+                return EmptyActor.getInstance();
+            } else {
+                return tmpActor;
+            }
+        } else {
+            String names[] = pName.split("/");
+
+            IActorRef tmpParent = systemActor.getContext().getChildren().get(names[0]);
+            if (tmpParent == null) return EmptyActor.getInstance();
+            for (int i = 1; i < names.length; i++) {
+                IActorRef tmpChild = tmpParent.getContext().getChildren().get(names[i]);
+                if (tmpChild == null) {
+                    return EmptyActor.getInstance();
+                }
+                tmpParent = tmpChild;
+            }
+
+            return tmpParent;
+        }
     }
 
     public synchronized String getEstadistica() {
         String tmp = "Start: " + startTime;
 
         tmp = tmp + " Up:" + getUpTime();
-        tmp = tmp + " Actores:" + systemActors.size() + " Executor service:" + workpool.toString();
+        tmp = tmp + " Actores:" + systemActor.getContext().getChildren().size() + " Executor service:" + workpool.toString();
 
         return tmp;
     }
@@ -143,13 +167,9 @@ public final class ActorsContainer implements IActorContext {
         return null;
     }
 
-    public ConcurrentHashMap<String, IActorRef> getActors() {
-        return systemActors;
-    }
-
     @Override
     public Map<String, IActorRef> getChildren() {
-        return systemActors;
+        return systemActor.getContext().getChildren();
     }
 
     public void broadcast(Object pMsg, IActorRef pSender) {

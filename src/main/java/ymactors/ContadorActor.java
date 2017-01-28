@@ -2,16 +2,12 @@ package ymactors;
 
 import com.yarhoslav.ymactors.core.DefaultActorHandler;
 import com.yarhoslav.ymactors.core.messages.PoisonPill;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import static java.util.logging.Logger.getLogger;
 
 /**
  *
  * @author YarhoslavME
  */
 public class ContadorActor extends DefaultActorHandler {
-    private static final Logger LOGGER = getLogger(ContadorActor.class.getName());
     private int contador;
     
     public ContadorActor(int pInicial) {
