@@ -7,18 +7,16 @@ package com.yarhoslav.ymactors.utils;
 public class Constants {
     public static final String YMACTORS_VERSION = "0.2-SNAPSHOT";
     
-    //Parametros del Loop Principal
+    //Pool config
     public static final int POOLSIZE = 4;
     public static final int SCHEDULESIZE = 1;
     
-    //Direcciones para MsgChannel
+    //Channels
     public static final String ADDR_BROADCAST = "BROADCAST_CHANNEL";
     public static final String ADDR_ERROR = "ERROR_CHANNEL";
     public static final String ADDR_DEATH = "DEATH_CHANNEL";
     
-    //Mensajes del Systema
-    public static final String MSG_SUSCRIBE = "SUSCRIBE";
-    public static final String MSG_UNSUSCRIBE = "UNSUSCRIBE";
+    //System messages
     public static final String MSG_DEATH = "DEATH_NOTIFICATION";
 
     private Constants() {

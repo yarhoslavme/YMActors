@@ -1,9 +1,7 @@
 package com.yarhoslav.ymactors.core.actors;
 
-import com.yarhoslav.ymactors.core.ActorsContainer;
 import com.yarhoslav.ymactors.core.DefaultActorHandler;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
-import com.yarhoslav.ymactors.utils.Constants;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -15,45 +13,44 @@ import static java.util.logging.Logger.getLogger;
  */
 public class BroadcastActor extends DefaultActorHandler {
 
-    static final Logger logger = getLogger(BroadcastActor.class.getName());
+    public static enum MSG {
+        SUBSCRIBE, UNSUBSCRIBE;
+    };
 
-    private final Map<String, String> suscribers = new HashMap<>();
+    static final Logger LOGGER = getLogger(BroadcastActor.class.getName());
 
-    private void suscribe(String pActor) {
-        suscribers.put(pActor, pActor);
+    private final Map<String, IActorRef> susbcribers = new HashMap<>();
+
+    private void susbcribe(IActorRef pActor) {
+        susbcribers.put(pActor.getName(), pActor);
     }
 
-    private void unsuscribe(String pActor) {
-        suscribers.remove(pActor);
+    private void unsusbcribe(IActorRef pActor) {
+        susbcribers.remove(pActor.getName());
     }
 
     private void publish(Object pMsg) {
-        if (suscribers.isEmpty()) {
+        if (susbcribers.isEmpty()) {
             return;
         }
-        suscribers.keySet().stream().forEach((_nombre) -> {
-            ActorsContainer _acc = this.getMyself().getContainer();
-            IActorRef _destino = _acc.findActor(_nombre);
-            if (_destino != null) {
-                _destino.tell(pMsg, this.getMyself().getSender());
-            } else {
-                unsuscribe(_nombre);
-            }
+
+        susbcribers.entrySet().forEach((entry) -> {
+            entry.getValue().tell(pMsg, this.getMyself().getSender());
         });
     }
 
     @Override
     public void process(Object msg) {
-        if (!(msg instanceof String)) return;
-        switch ((String) msg) {
-            case Constants.MSG_SUSCRIBE:
-                suscribe(this.getMyself().getSender().getName());
+        if (!(msg instanceof BroadcastActor.MSG)) {
+            publish(msg);
+        }
+        switch ((BroadcastActor.MSG) msg) {
+            case SUBSCRIBE:
+                susbcribe(this.getMyself().getSender());
                 break;
-            case Constants.MSG_UNSUSCRIBE:
-                unsuscribe(this.getMyself().getSender().getName());
+            case UNSUBSCRIBE:
+                unsusbcribe(this.getMyself().getSender());
                 break;
-            default:
-                publish(msg);
         }
     }
 }

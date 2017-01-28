@@ -12,7 +12,7 @@ public class DefaultActorHandler implements IActorHandler {
     private IActorRef mMyself;
 
     @Override
-    public void postStart() {
+    public void preStart() {
     }
 
     @Override
