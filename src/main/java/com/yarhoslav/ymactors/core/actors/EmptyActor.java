@@ -1,14 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.yarhoslav.ymactors.core.actors;
 
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -23,7 +19,7 @@ public final class EmptyActor implements IActorRef {
     public static EmptyActor getInstance() {
         return SINGLETON;
     }
-    
+
     public void setContext(IActorContext pContext) {
         context = pContext;
     }
@@ -36,16 +32,6 @@ public final class EmptyActor implements IActorRef {
     @Override
     public IActorContext getContext() {
         return context;
-    }
-
-    @Override
-    public IActorRef getParent() {
-        return this;
-    }
-
-    @Override
-    public HashMap<String, IActorRef> getChildren() {
-        return (HashMap) Collections.<String, IActorRef>emptyMap();
     }
 
     @Override
@@ -64,17 +50,27 @@ public final class EmptyActor implements IActorRef {
     }
 
     @Override
-    public void tell(Object pData, IActorRef pSender) {
-
-    }
-
-    @Override
     public IActorRef start() {
         return this;
     }
 
     @Override
     public void run() {
+
+    }
+
+    @Override
+    public void tell(Object pData) {
+
+    }
+
+    @Override
+    public void tell(BroadCastMsg pMsg) {
+
+    }
+
+    @Override
+    public void tell(Object pData, IActorRef pSender) {
 
     }
 

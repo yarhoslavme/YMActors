@@ -1,6 +1,7 @@
 package com.yarhoslav.ymactors.core.interfaces;
 
-import java.util.HashMap;
+import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
+import java.util.Map;
 
 /**
  *
@@ -12,17 +13,17 @@ public interface IActorRef extends Runnable {
 
     public IActorContext getContext();
 
-    public IActorRef getParent();
-
-    public HashMap<String, IActorRef> getChildren();
-
     public IActorRef getSender();
 
     public boolean isAlive();
-    
+
     public boolean isIdle();
 
-    public void tell(Object pData, IActorRef pSender);
-    
     public IActorRef start();
+
+    public void tell(Object pData);
+
+    public void tell(Object pData, IActorRef pSender);
+
+    public void tell(BroadCastMsg pMsg);
 }

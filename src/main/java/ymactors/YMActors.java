@@ -1,10 +1,8 @@
 package ymactors;
 
 import com.yarhoslav.ymactors.core.ActorsContainer;
-import com.yarhoslav.ymactors.core.DefaultActorHandler;
+import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
-import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
-import static com.yarhoslav.ymactors.core.messages.PoisonPill.getInstance;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -48,7 +46,6 @@ public class YMActors {
         ac.start();
         YMActors yma = new YMActors();
 
-        //yma.pingpong();
         yma.test1();
 
     }
@@ -61,7 +58,7 @@ public class YMActors {
                 IActorRef ca = ac.createActor("CONTADOR" + i, new ContadorActor(1000));
             }
 
-            ac.broadcast("contar", null);
+            ac.broadcast("contar", EmptyActor.getInstance());
 
         } catch (Exception e) {
             System.out.println(e.getMessage());

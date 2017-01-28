@@ -1,5 +1,6 @@
 package com.yarhoslav.ymactors.core;
 
+import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
@@ -12,12 +13,12 @@ import java.util.concurrent.ExecutorService;
  * @author yarhoslavme
  */
 public class DefaultActorContext implements IActorContext {
-    
-    private final HashMap<String, IActorRef> children;
+
+    private final Map<String, IActorRef> children;
     private final IActorRef parent;
     private final IActorContext container;
     //TOOD: Verify whether IActorContext can be used to represent the Container.
-    
+
     public DefaultActorContext(IActorRef pParent, IActorContext pContainer) {
         children = new HashMap<>();
         parent = pParent;
@@ -31,20 +32,27 @@ public class DefaultActorContext implements IActorContext {
         IActorRef newActor = new DefaultActor.ActorBuilder(pName).handler(pHandler).context(newContext).build().start();
         //TODO: Check what to do whether the name already exists. should it raise an exception?
         children.putIfAbsent(pName, newActor);
+        //TODO: Report new actor in Container too.  
         return newActor;
     }
 
     @Override
     public void killActor(IActorRef pActor) {
         children.remove(pActor.getName());
+        //TODO: Kill actor in Container too.
         //TODO: Check lifecicle of actor
     }
 
     @Override
     public IActorRef findActor(String pName) {
-        //TODO: find actor with long name (including parent's name)
-        //TODO: Fix null return
-        return children.get(pName);
+        //TODO: Delegate findactor to Container.
+        IActorRef tmpActor;
+        if (children.containsKey(pName)) {
+            tmpActor = children.get(pName);
+        } else {
+            tmpActor = EmptyActor.getInstance();
+        }
+        return tmpActor;
     }
 
     @Override
@@ -66,10 +74,10 @@ public class DefaultActorContext implements IActorContext {
     public boolean isAlive() {
         return container.isAlive();
     }
-    
+
     @Override
     public ExecutorService getExecutor() {
         return container.getExecutor();
     }
-    
+
 }

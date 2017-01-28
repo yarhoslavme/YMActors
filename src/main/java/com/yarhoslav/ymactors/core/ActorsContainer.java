@@ -153,7 +153,7 @@ public final class ActorsContainer implements IActorContext {
     }
 
     public void broadcast(Object pMsg, IActorRef pSender) {
-        systemActor.tell(new BroadCastMsg(pSender, pMsg), pSender);
+        systemActor.tell(new BroadCastMsg(pSender, pMsg));
     }
 
     @Override

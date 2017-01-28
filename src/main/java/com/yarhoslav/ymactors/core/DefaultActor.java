@@ -1,5 +1,6 @@
 package com.yarhoslav.ymactors.core;
 
+import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import com.yarhoslav.ymactors.core.interfaces.ICoreMessage;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
@@ -7,7 +8,6 @@ import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
 import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
 import com.yarhoslav.ymactors.core.messages.DefaultMsg;
 import com.yarhoslav.ymactors.core.messages.PoisonPill;
-import java.util.HashMap;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,7 +55,9 @@ public class DefaultActor implements IActorRef {
         }
 
         IActorRef build() {
-            return new DefaultActor(this);
+            IActorRef newActor = new DefaultActor(this);
+            handler.setMyself(newActor);
+            return newActor;
         }
 
         public ActorBuilder handler(IActorHandler pHandler) {
@@ -105,13 +107,11 @@ public class DefaultActor implements IActorRef {
 
     private void broadcast(BroadCastMsg pMsg) {
         context.getChildren().entrySet().forEach((entry) -> {
-            entry.getValue().tell(pMsg.getData(), pMsg.getSender());
+            entry.getValue().tell(pMsg);
         });
     }
 
     private void handleException(Exception e) {
-        //IActorRef tmpActor = (IActorRef) getContainer().getContext().get(Constants.ADDR_ERROR);
-        //tmpActor.tell(e, this);
         LOGGER.log(Level.WARNING, "Actor {0} throws an exception: {1}", new Object[]{name, e});
     }
 
@@ -120,19 +120,9 @@ public class DefaultActor implements IActorRef {
             return;
         }
         if (isIdle.compareAndSet(true, false)) {
-                if (context.getContainer().isAlive()) {
-                    context.getExecutor().execute(this);
-                }
-        }
-    }
-
-    @Override
-    public void tell(Object pData, IActorRef pSender) {
-        if (!isAlive.get()) {
-            return;
-        }
-        if (mailBox.offer(new DefaultMsg(pSender, pData))) {
-            requestQueue();
+            if (context.getContainer().isAlive()) {
+                context.getExecutor().execute(this);
+            }
         }
     }
 
@@ -149,12 +139,13 @@ public class DefaultActor implements IActorRef {
         try {
             ICoreMessage _msg = mailBox.poll();
             sender = _msg.getSender();
+
+            if (_msg instanceof BroadCastMsg) {
+                broadcast((BroadCastMsg) _msg);
+            }
+
             if (_msg.getData() instanceof PoisonPill) {
                 stop();
-                return;
-            }
-            if (_msg.getData() instanceof BroadCastMsg) {
-                broadcast((BroadCastMsg) _msg.getData());
                 return;
             }
 
@@ -178,28 +169,43 @@ public class DefaultActor implements IActorRef {
     }
 
     @Override
-    public IActorRef getParent() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public HashMap<String, IActorRef> getChildren() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public boolean isAlive() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return isAlive.get();
     }
 
     @Override
     public boolean isIdle() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return isIdle.get();
     }
 
     @Override
     public IActorContext getContext() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return context;
+    }
+
+    @Override
+    public void tell(Object pData) {
+        tell(pData, EmptyActor.getInstance());
+    }
+
+    @Override
+    public void tell(BroadCastMsg pMsg) {
+        if (!isAlive.get()) {
+            return;
+        }
+        if (mailBox.offer(pMsg)) {
+            requestQueue();
+        }
+    }
+
+    @Override
+    public void tell(Object pData, IActorRef pSender) {
+        if (!isAlive.get()) {
+            return;
+        }
+        if (mailBox.offer(new DefaultMsg(pSender, pData))) {
+            requestQueue();
+        }
     }
 
 }
