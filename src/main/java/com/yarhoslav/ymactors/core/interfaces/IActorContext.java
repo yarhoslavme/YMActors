@@ -11,8 +11,6 @@ public interface IActorContext {
 
     public IActorRef createActor(String pName, IActorHandler pHandler);
 
-    public void killActor(IActorRef pActor);
-
     public IActorRef findActor(String pName);
     
     public IActorContext getContainer();

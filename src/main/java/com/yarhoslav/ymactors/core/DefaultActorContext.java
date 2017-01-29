@@ -37,13 +37,6 @@ public class DefaultActorContext implements IActorContext {
     }
 
     @Override
-    public void killActor(IActorRef pActor) {
-        children.remove(pActor.getName());
-        //TODO: Kill child in Container too.
-        //TODO: Check lifecicle of actor
-    }
-
-    @Override
     public IActorRef findActor(String pName) {
         IActorRef tmpActor;
         if (children.containsKey(pName)) {

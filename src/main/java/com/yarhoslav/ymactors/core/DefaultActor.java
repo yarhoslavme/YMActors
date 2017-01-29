@@ -6,6 +6,7 @@ import com.yarhoslav.ymactors.core.interfaces.ICoreMessage;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
 import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
+import com.yarhoslav.ymactors.core.messages.DeathMsg;
 import com.yarhoslav.ymactors.core.messages.DefaultMsg;
 import com.yarhoslav.ymactors.core.messages.PoisonPill;
 import java.util.Queue;
@@ -93,6 +94,8 @@ public class DefaultActor implements IActorRef {
     }
 
     private void stop() {
+        //TODO Send the exceptios to his father
+        LOGGER.log(Level.WARNING, "DefaultActor  STOP");
         isIdle.set(false);
         isAlive.set(false);
         try {
@@ -100,13 +103,12 @@ public class DefaultActor implements IActorRef {
         } catch (Exception exp) {
             LOGGER.log(Level.WARNING, "Error stoping Actor {0}: {1}.", new Object[]{name, exp});
             handleException(exp);
-        } finally {
-            context.killActor(this);
         }
+        getContext().getParent().tell(DeathMsg.getInstance());
     }
 
     private void broadcast(BroadCastMsg pMsg) {
-        context.getChildren().entrySet().forEach((entry) -> {
+        getContext().getChildren().entrySet().forEach((entry) -> {
             entry.getValue().tell(pMsg);
         });
     }
@@ -121,10 +123,16 @@ public class DefaultActor implements IActorRef {
             return;
         }
         if (isIdle.compareAndSet(true, false)) {
-            if (context.getContainer().isAlive()) {
-                context.getExecutor().execute(this);
+            if (getContext().getContainer().isAlive()) {
+                getContext().getExecutor().execute(this);
             }
         }
+    }
+
+    private void killChild(IActorRef pChild) {
+        //TODO: Remove this line
+        LOGGER.log(Level.INFO, "Removing {0}", new Object[]{pChild.getName(), getContext().getChildren().remove(pChild.getName())});
+        //getContext().getChildren().remove(pChild.getName());
     }
 
     @Override
@@ -146,7 +154,16 @@ public class DefaultActor implements IActorRef {
             }
 
             if (_msg.getData() instanceof PoisonPill) {
+                //TODO: Remove this line
+                LOGGER.log(Level.INFO, "{0} procesing PoisonPill.", getName());
                 stop();
+                return;
+            }
+
+            if (_msg.getData() instanceof DeathMsg) {
+                //TODO: Remove this line
+                LOGGER.log(Level.INFO, "{0} procesing DeathMsg.", getName());
+                killChild(sender);
                 return;
             }
 

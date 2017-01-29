@@ -89,12 +89,6 @@ public final class ActorsContainer implements IActorContext {
     }
 
     @Override
-    public void killActor(IActorRef pActor) {
-        //TODO: Kill actor in Actorscontainer is especial.
-        systemActor.getContext().killActor(pActor);
-    }
-
-    @Override
     public IActorRef findActor(String pName) {
         //TODO: Find an actor by his name across entire system
         if (pName == null) {
