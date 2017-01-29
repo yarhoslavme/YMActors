@@ -28,12 +28,11 @@ public class DefaultActorContext implements IActorContext {
 
     @Override
     public IActorRef createActor(String pName, IActorHandler pHandler) throws IllegalArgumentException {
-        //TODO: Name needs to be transformed with parent name.
+        if (children.containsKey(pName)) return children.get(pName);
         IActorContext newContext = new DefaultActorContext(getMyself(), container);
         IActorRef newActor = new DefaultActor.ActorBuilder(pName).handler(pHandler).context(newContext).build().start();
+        children.put(pName, newActor);
         //TODO: Check what to do whether the name already exists. should it raise an exception?
-        children.putIfAbsent(pName, newActor);
-        //TODO: Report new child in Container too.  
         return newActor;
     }
 

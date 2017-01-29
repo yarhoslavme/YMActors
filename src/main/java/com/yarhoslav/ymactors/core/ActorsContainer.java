@@ -71,26 +71,24 @@ public final class ActorsContainer implements IActorContext {
     @Override
     public IActorRef createActor(String pName, IActorHandler pHandler) {
         if (!isAlive.get()) {
-            //TODO: Big mistake!.  Don't return NULL - FIX IT!
             LOGGER.log(Level.WARNING, "System {0} is inactive. Actor {1} is not created.", new Object[]{name, pName});
-            return null;
+            return EmptyActor.getInstance();
         }
 
         //TODO: Improve error handling when creating actors!
-        IActorRef newActor = null;
+        IActorRef newActor;
         try {
-            systemActor.getContext().createActor(pName, pHandler);
+            newActor = systemActor.getContext().createActor(pName, pHandler);
 
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.WARNING, "Error in System {0} creating Actor {1}: {2}.", new Object[]{name, pName, e});
+            newActor = EmptyActor.getInstance();
         }
         return newActor;
-
     }
 
     @Override
     public IActorRef findActor(String pName) {
-        //TODO: Find an actor by his name across entire system
         if (pName == null) {
             return EmptyActor.getInstance();
         }
@@ -106,7 +104,9 @@ public final class ActorsContainer implements IActorContext {
             String names[] = pName.split("/");
 
             IActorRef tmpParent = systemActor.getContext().getChildren().get(names[0]);
-            if (tmpParent == null) return EmptyActor.getInstance();
+            if (tmpParent == null) {
+                return EmptyActor.getInstance();
+            }
             for (int i = 1; i < names.length; i++) {
                 IActorRef tmpChild = tmpParent.getContext().getChildren().get(names[i]);
                 if (tmpChild == null) {
@@ -157,8 +157,7 @@ public final class ActorsContainer implements IActorContext {
 
     @Override
     public IActorRef getParent() {
-        //TODO: check if return empty actor or return /user actor
-        return null;
+        return systemActor;
     }
 
     @Override
@@ -182,7 +181,7 @@ public final class ActorsContainer implements IActorContext {
 
     @Override
     public void setMyself(IActorRef pMyself) {
-        
+
     }
 
     @Override
