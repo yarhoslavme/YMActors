@@ -1,10 +1,8 @@
 package ymactors;
 
 import com.yarhoslav.ymactors.core.ActorsContainer;
-import com.yarhoslav.ymactors.core.DefaultActorHandler;
+import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
-import static com.yarhoslav.ymactors.core.messages.PoisonPill.getInstance;
-import com.yarhoslav.ymactors.utils.Constants;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -48,81 +46,31 @@ public class YMActors {
         ac.start();
         YMActors yma = new YMActors();
 
-        //yma.pingpong();
         yma.test1();
 
-    }
-
-    void pingpong() {
-        System.out.println("PRUEBA DE PING-PONG");
-        try {
-            status.start();
-            int maxactores = 200000;
-            IActorRef[] pong = new IActorRef[maxactores];
-            IActorRef[] ping = new IActorRef[maxactores];
-            for (int i = 0; i < maxactores; i++) {
-                pong[i] = ac.createActor("pong" + i, new DefaultActorHandler() {
-                    //Poner referencia a AtomicIntenger
-                    int contador = 0;
-
-                    @Override
-                    public void process(Object msj) {
-                        if (contador++ >= 1000) {
-                            //System.out.println(getActorRef().getName() + " - " + contador.toString());
-                            this.getMyself().tell(getInstance(), null);
-                        }
-                        if ("ping".equals(msj)) {
-                            this.getMyself().getSender().tell("pong", this.getMyself());
-                        }
-                    }
-                });
-                ping[i] = ac.createActor("ping" + i, new DefaultActorHandler() {
-                    int contador = 0;
-
-                    @Override
-                    public void process(Object msj) {
-                        /*
-                         long threadId = Thread.currentThread().getId();
-                         if (getActorRef().getName().equals("ping0")) {
-                         System.out.println("Hilo:" + threadId);
-                         }*/
-                        if (contador++ >= 1000) {
-                            //System.out.println(getActorRef().getName() + " - " + contador.toString());
-                            this.getMyself().tell(getInstance(), null);
-                        }
-                        if ("pong".equals(msj)) {
-                            this.getMyself().getSender().tell("ping", this.getMyself());
-                        }
-                    }
-                });
-                pong[i].tell("ping", ping[i]);
-            }
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        } finally {
-            BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
-            try {
-                buf.readLine();
-            } catch (IOException ex) {
-                System.out.println(ex.getMessage());
-            }
-            ac.ShutDownNow();
-            status.interrupt();
-        }
     }
 
     void test1() {
         try {
             status.start();
 
-            for (int i = 0; i < 100000; i++) {
+            for (int i = 0; i < 3; i++) {
                 IActorRef ca = ac.createActor("CONTADOR" + i, new ContadorActor(1000));
-                //ca.tell("contar", null);
             }
-
-            IActorRef tmp = (IActorRef) ac.getContext().get(Constants.ADDR_BROADCAST);
-            tmp.tell("contar", null);
+            /*
+            IActorRef tmpActor = ac.findActor("CONTADOR100");
+            tmpActor.getContext().createActor("OTRO", null);
+            System.out.println(ac.findActor("CONTADOR100").getName());
+            System.out.println(ac.findActor("OTRO").getName());
+            tmpActor = ac.findActor("CONTADOR100/OTRO");
+            tmpActor.getContext().createActor("OTRO", null);
+            tmpActor.getContext().createActor("PERRO", null);
+            tmpActor = ac.findActor("CONTADOR100/OTRO");
+            System.out.println(tmpActor.getContext().findActor("OTRO").getName());
+            System.out.println(tmpActor.getContext().findActor("PERRO").getName());
+            */
+            
+            ac.broadcast("contar", EmptyActor.getInstance());
 
         } catch (Exception e) {
             System.out.println(e.getMessage());

@@ -7,7 +7,7 @@ import com.yarhoslav.ymactors.core.interfaces.ICoreMessage;
  *
  * @author YarhoslavME
  */
-public final class DefaultMessage implements ICoreMessage {
+public final class BroadCastMsg implements ICoreMessage {
     private final IActorRef sender;
     private final Object data;
 
@@ -21,7 +21,7 @@ public final class DefaultMessage implements ICoreMessage {
         return data;
     }
     
-    public DefaultMessage(final IActorRef pSender, final Object pData) {
+    public BroadCastMsg(final IActorRef pSender, final Object pData) {
         sender = pSender;
         data = pData;
     }   

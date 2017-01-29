@@ -8,11 +8,11 @@ import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
  * @author yarhoslavme
  */
 public class DefaultActorHandler implements IActorHandler {
-    
-    private IActorRef mMyself;
+
+    private IActorRef mySelf;
 
     @Override
-    public void postStart() {
+    public void preStart() {
     }
 
     @Override
@@ -25,12 +25,12 @@ public class DefaultActorHandler implements IActorHandler {
 
     @Override
     public IActorRef getMyself() {
-        return mMyself;
-    }   
+        return mySelf;
+    }
 
     @Override
     public void setMyself(IActorRef pMyself) {
-        mMyself = pMyself;
+        mySelf = pMyself;
     }
 
 }

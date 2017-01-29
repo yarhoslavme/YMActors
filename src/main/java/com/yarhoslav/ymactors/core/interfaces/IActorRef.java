@@ -1,7 +1,7 @@
 package com.yarhoslav.ymactors.core.interfaces;
 
-import com.yarhoslav.ymactors.core.ActorsContainer;
-import java.util.concurrent.ConcurrentHashMap;
+import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
+import java.util.Map;
 
 /**
  *
@@ -9,15 +9,21 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public interface IActorRef extends Runnable {
 
-    public void tell(Object pData, IActorRef pFuente);
-
     public String getName();
 
-    public void start();
-
-    public ActorsContainer getContainer();
+    public IActorContext getContext();
 
     public IActorRef getSender();
-    
-    public ConcurrentHashMap<String, Object> getContext();
+
+    public boolean isAlive();
+
+    public boolean isIdle();
+
+    public IActorRef start();
+
+    public void tell(Object pData);
+
+    public void tell(Object pData, IActorRef pSender);
+
+    public void tell(BroadCastMsg pMsg);
 }

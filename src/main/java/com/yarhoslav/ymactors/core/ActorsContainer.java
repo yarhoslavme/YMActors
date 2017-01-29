@@ -1,12 +1,13 @@
 package com.yarhoslav.ymactors.core;
 
-import com.yarhoslav.ymactors.core.actors.BroadcastActor;
+import com.yarhoslav.ymactors.core.actors.EmptyActor;
+import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import com.yarhoslav.ymactors.utils.Constants;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
-import com.yarhoslav.ymactors.core.messages.PoisonPill;
+import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
 import static java.lang.System.currentTimeMillis;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
@@ -22,16 +23,17 @@ import static java.util.logging.Logger.getLogger;
  *
  * @author YarhoslavME
  */
-public final class ActorsContainer {
+public final class ActorsContainer implements IActorContext {
 
     private static final Logger LOGGER = getLogger(ActorsContainer.class.getName());
+    private static final String SYSTEMACTOR = "SYSTEM";
+
+    private final String name;
     private final AtomicBoolean isAlive = new AtomicBoolean(false);
     private final ExecutorService workpool = new ForkJoinPool();
     private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(Constants.SCHEDULESIZE);
-    private final ConcurrentHashMap<String, IActorRef> actors = new ConcurrentHashMap<>();
     private final long startTime = currentTimeMillis();
-    private final String name;
-    private final ConcurrentHashMap<String, Object> context = new ConcurrentHashMap<>();
+    private IActorRef systemActor;
 
     public ActorsContainer(String pName) throws IllegalArgumentException {
         if (pName != null) {
@@ -45,22 +47,10 @@ public final class ActorsContainer {
         LOGGER.log(Level.INFO, "Starting Actor Container {0}.", name);
         isAlive.set(true);
 
-        //Container Context
-        //Broadcast channel
-        IActorRef tmpActor = new ActorFactory().createActor(Constants.ADDR_BROADCAST, new BroadcastActor(), this);
-        tmpActor.start();
-        actors.put(Constants.ADDR_BROADCAST, tmpActor);
-        context.put(Constants.ADDR_BROADCAST, tmpActor);
-
-        //Error channel
-        tmpActor = createActor(Constants.ADDR_ERROR, new BroadcastActor());
-        actors.put(Constants.ADDR_ERROR, tmpActor);
-        context.put(Constants.ADDR_ERROR, tmpActor);
-
-        //Lost messages channel
-        tmpActor = createActor(Constants.ADDR_DEATH, new BroadcastActor());
-        actors.put(Constants.ADDR_DEATH, tmpActor);
-        context.put(Constants.ADDR_DEATH, tmpActor);
+        EmptyActor empty = EmptyActor.getInstance();
+        empty.setContext(this);
+        IActorContext newContext = new DefaultActorContext(empty, this);
+        systemActor = new DefaultActor.ActorBuilder(SYSTEMACTOR).handler(new DefaultActorHandler()).context(newContext).build().start();
     }
 
     public void ShutDownNow() {
@@ -78,6 +68,7 @@ public final class ActorsContainer {
         }
     }
 
+    @Override
     public IActorRef createActor(String pName, IActorHandler pHandler) {
         if (!isAlive.get()) {
             //TODO: Big mistake!.  Don't return NULL - FIX IT!
@@ -85,46 +76,54 @@ public final class ActorsContainer {
             return null;
         }
 
-        if (actors.containsKey(pName)) {
-            LOGGER.log(Level.WARNING, "Actor {0} already exists.", pName);
-            return actors.get(pName);
-        }
-
         //TODO: Improve error handling when creating actors!
-        IActorRef tempActor;
+        IActorRef newActor = null;
         try {
-            tempActor = new ActorFactory().createActor(pName, pHandler, this);
-            tempActor.start();
-            actors.put(pName, tempActor);
-            IActorRef tmpBroadcast = (IActorRef) getContext().get(Constants.ADDR_BROADCAST);
-            tmpBroadcast.tell(Constants.MSG_SUSCRIBE, tempActor);
+            systemActor.getContext().createActor(pName, pHandler);
 
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.WARNING, "Error in System {0} creating Actor {1}: {2}.", new Object[]{name, pName, e});
-            tempActor = null;
         }
-        return tempActor;
+        return newActor;
+
     }
 
-    public void killActor(IActorRef pActor) {
-        IActorRef tmpBroadcast = (IActorRef) getContext().get(Constants.ADDR_BROADCAST);
-        tmpBroadcast.tell(Constants.MSG_UNSUSCRIBE, pActor);
-        actors.remove(pActor.getName());
-    }
-
-    public ConcurrentHashMap<String, IActorRef> getActors() {
-        return actors;
-    }
-
+    @Override
     public IActorRef findActor(String pName) {
-        return actors.get(pName);
+        //TODO: Find an actor by his name across entire system
+        if (pName == null) {
+            return EmptyActor.getInstance();
+        }
+
+        if (!pName.contains("/")) {
+            IActorRef tmpActor = systemActor.getContext().getChildren().get(pName);
+            if (tmpActor == null) {
+                return EmptyActor.getInstance();
+            } else {
+                return tmpActor;
+            }
+        } else {
+            String names[] = pName.split("/");
+
+            IActorRef tmpParent = systemActor.getContext().getChildren().get(names[0]);
+            if (tmpParent == null) return EmptyActor.getInstance();
+            for (int i = 1; i < names.length; i++) {
+                IActorRef tmpChild = tmpParent.getContext().getChildren().get(names[i]);
+                if (tmpChild == null) {
+                    return EmptyActor.getInstance();
+                }
+                tmpParent = tmpChild;
+            }
+
+            return tmpParent;
+        }
     }
 
     public synchronized String getEstadistica() {
         String tmp = "Start: " + startTime;
 
         tmp = tmp + " Up:" + getUpTime();
-        tmp = tmp + " Actores:" + actors.size() + " Executor service:" + workpool.toString();
+        tmp = tmp + " Actores:" + systemActor.getContext().getChildren().size() + " Executor service:" + workpool.toString();
 
         return tmp;
     }
@@ -135,10 +134,6 @@ public final class ActorsContainer {
         }, demoraInicial, periodo, TimeUnit.MILLISECONDS);
     }
 
-    public ExecutorService getExecutor() {
-        return workpool;
-    }
-
     public long getUpTime() {
         return currentTimeMillis() - startTime;
     }
@@ -147,12 +142,42 @@ public final class ActorsContainer {
         return name;
     }
 
-    public ConcurrentHashMap getContext() {
-        return context;
+    public IActorContext getContext() {
+        return this;
     }
-    
+
     public boolean getAlive() {
         return isAlive.get();
+    }
+
+    @Override
+    public ActorsContainer getContainer() {
+        return this;
+    }
+
+    @Override
+    public IActorRef getParent() {
+        //TODO: check if return empty actor or return /user actor
+        return null;
+    }
+
+    @Override
+    public Map<String, IActorRef> getChildren() {
+        return systemActor.getContext().getChildren();
+    }
+
+    public void broadcast(Object pMsg, IActorRef pSender) {
+        systemActor.tell(new BroadCastMsg(pSender, pMsg));
+    }
+
+    @Override
+    public boolean isAlive() {
+        return isAlive.get();
+    }
+
+    @Override
+    public ExecutorService getExecutor() {
+        return workpool;
     }
 
 }
