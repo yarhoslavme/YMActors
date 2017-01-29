@@ -54,7 +54,7 @@ public class YMActors {
         try {
             status.start();
 
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 100000; i++) {
                 IActorRef ca = ac.createActor("CONTADOR" + i, new ContadorActor(1000));
             }
             /*

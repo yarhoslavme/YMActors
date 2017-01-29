@@ -24,8 +24,6 @@ public class ContadorActor extends DefaultActorHandler {
         if (msj.equals("contar")) {
             contador--;
             if (contador <= 0) {
-                //TODO: Remove this line
-                LOGGER.log(Level.INFO, "{0} time to die. PoisonPill taken.", getMyself().getName());
                   this.getMyself().tell(PoisonPill.getInstance());
             } else {
                 this.getMyself().tell("contar", getMyself());

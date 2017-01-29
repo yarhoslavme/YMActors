@@ -180,4 +180,14 @@ public final class ActorsContainer implements IActorContext {
         return workpool;
     }
 
+    @Override
+    public void setMyself(IActorRef pMyself) {
+        
+    }
+
+    @Override
+    public IActorRef getMyself() {
+        return systemActor;
+    }
+
 }

@@ -22,5 +22,9 @@ public interface IActorContext {
     public boolean isAlive();
     
     public ExecutorService getExecutor();
+    
+    public void setMyself(IActorRef pMyself);
+    
+    public IActorRef getMyself();
 
 }

@@ -58,6 +58,7 @@ public class DefaultActor implements IActorRef {
         IActorRef build() {
             IActorRef newActor = new DefaultActor(this);
             handler.setMyself(newActor);
+            context.setMyself(newActor);
             return newActor;
         }
 
@@ -94,17 +95,14 @@ public class DefaultActor implements IActorRef {
     }
 
     private void stop() {
-        //TODO Send the exceptios to his father
-        LOGGER.log(Level.WARNING, "DefaultActor  STOP");
         isIdle.set(false);
         isAlive.set(false);
         try {
             handler.beforeStop();
         } catch (Exception exp) {
-            LOGGER.log(Level.WARNING, "Error stoping Actor {0}: {1}.", new Object[]{name, exp});
             handleException(exp);
         }
-        getContext().getParent().tell(DeathMsg.getInstance());
+        getContext().getParent().tell(DeathMsg.getInstance(), this);
     }
 
     private void broadcast(BroadCastMsg pMsg) {
@@ -130,9 +128,7 @@ public class DefaultActor implements IActorRef {
     }
 
     private void killChild(IActorRef pChild) {
-        //TODO: Remove this line
-        LOGGER.log(Level.INFO, "Removing {0}", new Object[]{pChild.getName(), getContext().getChildren().remove(pChild.getName())});
-        //getContext().getChildren().remove(pChild.getName());
+        getContext().getChildren().remove(pChild.getName());
     }
 
     @Override
@@ -154,15 +150,11 @@ public class DefaultActor implements IActorRef {
             }
 
             if (_msg.getData() instanceof PoisonPill) {
-                //TODO: Remove this line
-                LOGGER.log(Level.INFO, "{0} procesing PoisonPill.", getName());
                 stop();
                 return;
             }
 
             if (_msg.getData() instanceof DeathMsg) {
-                //TODO: Remove this line
-                LOGGER.log(Level.INFO, "{0} procesing DeathMsg.", getName());
                 killChild(sender);
                 return;
             }

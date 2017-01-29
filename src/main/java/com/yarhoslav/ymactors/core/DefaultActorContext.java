@@ -17,6 +17,7 @@ public class DefaultActorContext implements IActorContext {
     private final Map<String, IActorRef> children;
     private final IActorRef parent;
     private final IActorContext container;
+    private IActorRef mySelf;
     //TOOD: Verify whether IActorContext can be used to represent the Container.
 
     public DefaultActorContext(IActorRef pParent, IActorContext pContainer) {
@@ -28,7 +29,7 @@ public class DefaultActorContext implements IActorContext {
     @Override
     public IActorRef createActor(String pName, IActorHandler pHandler) throws IllegalArgumentException {
         //TODO: Name needs to be transformed with parent name.
-        IActorContext newContext = new DefaultActorContext(parent, container);
+        IActorContext newContext = new DefaultActorContext(getMyself(), container);
         IActorRef newActor = new DefaultActor.ActorBuilder(pName).handler(pHandler).context(newContext).build().start();
         //TODO: Check what to do whether the name already exists. should it raise an exception?
         children.putIfAbsent(pName, newActor);
@@ -70,6 +71,16 @@ public class DefaultActorContext implements IActorContext {
     @Override
     public ExecutorService getExecutor() {
         return container.getExecutor();
+    }
+
+    @Override
+    public void setMyself(IActorRef pMyself) {
+        mySelf = pMyself;
+    }
+
+    @Override
+    public IActorRef getMyself() {
+        return mySelf;
     }
 
 }
