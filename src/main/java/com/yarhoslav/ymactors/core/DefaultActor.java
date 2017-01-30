@@ -81,7 +81,12 @@ public class DefaultActor implements IActorRef {
     public IActorRef start() throws IllegalStateException {
         isAlive.set(true);
         isIdle.set(true);
-        handler.preStart();
+        try {
+            handler.preStart();
+        } catch (Exception ex) {
+            Logger.getLogger(DefaultActor.class.getName()).log(Level.WARNING, null, ex);
+            throw new IllegalStateException("Error starting Actor.", ex);
+        }
         return this;
     }
 
@@ -90,7 +95,7 @@ public class DefaultActor implements IActorRef {
         isAlive.set(false);
         try {
             handler.beforeStop();
-        } catch (IllegalStateException exp) {
+        } catch (Exception exp) {
             handleException(exp);
         }
         getContext().getParent().tell(DeathMsg.getInstance(), this);
@@ -153,7 +158,7 @@ public class DefaultActor implements IActorRef {
             if (handler != null) {
                 handler.process(_msg.getData());
             }
-        } catch (IllegalStateException e) {
+        } catch (Exception e) {
             handleException(e);
         } finally {
             //TODO: Que pasa con los mensajes no procesados?
