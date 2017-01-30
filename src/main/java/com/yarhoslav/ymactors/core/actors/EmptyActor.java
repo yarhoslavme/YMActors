@@ -3,8 +3,6 @@ package com.yarhoslav.ymactors.core.actors;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  *
@@ -12,7 +10,7 @@ import java.util.Map;
  */
 public final class EmptyActor implements IActorRef {
 
-    private static final String EMPTYNAME = "EMPTY";
+    private static final String EMPTYNAME = "EMPTYACTOR";
     private static final EmptyActor SINGLETON = new EmptyActor();
     private IActorContext context;
 

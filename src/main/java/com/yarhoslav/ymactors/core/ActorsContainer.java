@@ -2,7 +2,6 @@ package com.yarhoslav.ymactors.core;
 
 import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
-import com.yarhoslav.ymactors.utils.Constants;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
 import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
@@ -23,6 +22,8 @@ import static java.util.logging.Logger.getLogger;
  *
  * @author YarhoslavME
  */
+
+//TODO: Separate the ActorContext from the ActorContainer
 public final class ActorsContainer implements IActorContext {
 
     private static final Logger LOGGER = getLogger(ActorsContainer.class.getName());
@@ -31,7 +32,7 @@ public final class ActorsContainer implements IActorContext {
     private final String name;
     private final AtomicBoolean isAlive = new AtomicBoolean(false);
     private final ExecutorService workpool = new ForkJoinPool();
-    private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(Constants.SCHEDULESIZE);
+    private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1); //TODO: Create APPConfig with external config file
     private final long startTime = currentTimeMillis();
     private IActorRef systemActor;
 

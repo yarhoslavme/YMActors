@@ -18,8 +18,8 @@ public interface IActorRef extends Runnable {
     public boolean isAlive();
 
     public boolean isIdle();
-
-    public IActorRef start();
+    
+    public IActorRef start() throws Exception;
 
     public void tell(Object pData);
 

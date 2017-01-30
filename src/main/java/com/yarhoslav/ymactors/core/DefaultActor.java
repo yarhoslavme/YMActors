@@ -78,19 +78,10 @@ public class DefaultActor implements IActorRef {
     }
 
     @Override
-    public IActorRef start() {
+    public IActorRef start() throws Exception {
         isAlive.set(true);
         isIdle.set(true);
-
-        try {
-            handler.preStart();
-        } catch (Exception exp) {
-            LOGGER.log(Level.WARNING, "Error starting Actor {0}: {1}.", new Object[]{name, exp});
-            //TODO: Inform the exception to his parent and let him decide what to do
-            this.tell(PoisonPill.getInstance(), this);
-            handleException(exp);
-        }
-
+        handler.preStart();
         return this;
     }
 
@@ -106,7 +97,7 @@ public class DefaultActor implements IActorRef {
     }
 
     private void broadcast(BroadCastMsg pMsg) {
-        getContext().getChildren().entrySet().forEach((entry) -> {
+        context.getChildren().entrySet().forEach((entry) -> {
             entry.getValue().tell(pMsg);
         });
     }
@@ -121,14 +112,14 @@ public class DefaultActor implements IActorRef {
             return;
         }
         if (isIdle.compareAndSet(true, false)) {
-            if (getContext().getContainer().isAlive()) {
-                getContext().getExecutor().execute(this);
+            if (context.getContainer().isAlive()) {
+                context.getExecutor().execute(this);
             }
         }
     }
 
     private void killChild(IActorRef pChild) {
-        getContext().getChildren().remove(pChild.getName());
+        context.getChildren().remove(pChild.getName());
     }
 
     @Override

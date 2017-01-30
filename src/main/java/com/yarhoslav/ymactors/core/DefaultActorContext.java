@@ -4,8 +4,8 @@ import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -21,7 +21,7 @@ public class DefaultActorContext implements IActorContext {
     //TOOD: Verify whether IActorContext can be used to represent the Container.
 
     public DefaultActorContext(IActorRef pParent, IActorContext pContainer) {
-        children = new HashMap<>();
+        children = new ConcurrentHashMap<>();
         parent = pParent;
         container = parent.getContext().getContainer();
     }
