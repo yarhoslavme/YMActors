@@ -6,6 +6,7 @@ import com.yarhoslav.ymactors.core.interfaces.ICoreMessage;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
 import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
+import com.yarhoslav.ymactors.core.messages.ChildErrorMsg;
 import com.yarhoslav.ymactors.core.messages.DeathMsg;
 import com.yarhoslav.ymactors.core.messages.DefaultMsg;
 import com.yarhoslav.ymactors.core.messages.PoisonPill;
@@ -107,9 +108,9 @@ public class DefaultActor implements IActorRef {
         });
     }
 
-    private void handleException(Exception e) {
-        //TODO Send the exceptios to his father
-        LOGGER.log(Level.WARNING, "Actor {0} throws an exception: {1}", new Object[]{name, e});
+    private void handleException(Exception pException) {
+        LOGGER.log(Level.WARNING, "Actor {0} throws an exception: {1}", new Object[]{name, pException});
+        context.getParent().tell(new ChildErrorMsg(this, pException));
     }
 
     private void requestQueue() {
@@ -155,6 +156,8 @@ public class DefaultActor implements IActorRef {
                 return;
             }
 
+            //TODO: Process ChildErrorMsg
+            
             if (handler != null) {
                 handler.process(_msg.getData());
             }

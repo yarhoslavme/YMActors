@@ -33,4 +33,8 @@ public class DefaultActorHandler implements IActorHandler {
         mySelf = pMyself;
     }
 
+    @Override
+    public void childErrorHanlder(Exception pException, IActorRef pChild) {
+    }
+
 }
