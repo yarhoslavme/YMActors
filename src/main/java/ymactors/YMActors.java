@@ -43,7 +43,6 @@ public class YMActors {
     public static void main(String[] args) throws InterruptedException {
         // TODO code application logic here
 
-        ac.start();
         YMActors yma = new YMActors();
 
         yma.test1();

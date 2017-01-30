@@ -22,7 +22,6 @@ import static java.util.logging.Logger.getLogger;
  *
  * @author YarhoslavME
  */
-
 //TODO: Separate the ActorContext from the ActorContainer
 public final class ActorsContainer implements IActorContext {
 
@@ -36,22 +35,28 @@ public final class ActorsContainer implements IActorContext {
     private final long startTime = currentTimeMillis();
     private IActorRef systemActor;
 
-    public ActorsContainer(String pName) throws IllegalArgumentException {
-        if (pName != null) {
-            name = pName;
-        } else {
-            throw new IllegalArgumentException("Name is null.");
+    public ActorsContainer(String pName) throws IllegalArgumentException, IllegalStateException {
+        if (pName == null) {
+            throw new IllegalArgumentException("ActorContainer's name can not be null.");
         }
+
+        name = pName;
+        start();
     }
 
-    public void start() {
+    private void start() throws IllegalStateException {
         LOGGER.log(Level.INFO, "Starting Actor Container {0}.", name);
         isAlive.set(true);
 
         EmptyActor empty = EmptyActor.getInstance();
         empty.setContext(this);
         IActorContext newContext = new DefaultActorContext(empty, this);
-        systemActor = new DefaultActor.ActorBuilder(SYSTEMACTOR).handler(new DefaultActorHandler()).context(newContext).build().start();
+        try {
+            systemActor = new DefaultActor.ActorBuilder(SYSTEMACTOR).handler(new DefaultActorHandler()).context(newContext).build().start();
+        } catch (Exception ex) {
+            Logger.getLogger(ActorsContainer.class.getName()).log(Level.SEVERE, "An error occurs setting up the Actor container", ex);
+            throw new IllegalStateException("An error occurs setting up the Actor container");
+        }
     }
 
     public void ShutDownNow() {

@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutorService;
  */
 public interface IActorContext {
 
-    public IActorRef createActor(String pName, IActorHandler pHandler);
+    public IActorRef createActor(String pName, IActorHandler pHandler) throws IllegalArgumentException, IllegalStateException;
 
     public IActorRef findActor(String pName);
     

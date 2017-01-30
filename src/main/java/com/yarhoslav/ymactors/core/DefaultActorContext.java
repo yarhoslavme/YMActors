@@ -27,7 +27,7 @@ public class DefaultActorContext implements IActorContext {
     }
 
     @Override
-    public IActorRef createActor(String pName, IActorHandler pHandler) throws IllegalArgumentException {
+    public IActorRef createActor(String pName, IActorHandler pHandler) throws IllegalArgumentException, IllegalStateException {
         if (children.containsKey(pName)) return children.get(pName);
         IActorContext newContext = new DefaultActorContext(getMyself(), container);
         IActorRef newActor = new DefaultActor.ActorBuilder(pName).handler(pHandler).context(newContext).build().start();
