@@ -2,7 +2,6 @@ package com.yarhoslav.ymactors.core;
 
 import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
-import com.yarhoslav.ymactors.utils.Constants;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
 import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
@@ -23,6 +22,7 @@ import static java.util.logging.Logger.getLogger;
  *
  * @author YarhoslavME
  */
+//TODO: Separate the ActorContext from the ActorContainer
 public final class ActorsContainer implements IActorContext {
 
     private static final Logger LOGGER = getLogger(ActorsContainer.class.getName());
@@ -31,26 +31,32 @@ public final class ActorsContainer implements IActorContext {
     private final String name;
     private final AtomicBoolean isAlive = new AtomicBoolean(false);
     private final ExecutorService workpool = new ForkJoinPool();
-    private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(Constants.SCHEDULESIZE);
+    private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1); //TODO: Create APPConfig with external config file
     private final long startTime = currentTimeMillis();
     private IActorRef systemActor;
 
-    public ActorsContainer(String pName) throws IllegalArgumentException {
-        if (pName != null) {
-            name = pName;
-        } else {
-            throw new IllegalArgumentException("Name is null.");
+    public ActorsContainer(String pName) throws IllegalArgumentException, IllegalStateException {
+        if (pName == null) {
+            throw new IllegalArgumentException("ActorContainer's name can not be null.");
         }
+
+        name = pName;
+        start();
     }
 
-    public void start() {
+    private void start() throws IllegalStateException {
         LOGGER.log(Level.INFO, "Starting Actor Container {0}.", name);
         isAlive.set(true);
 
         EmptyActor empty = EmptyActor.getInstance();
         empty.setContext(this);
         IActorContext newContext = new DefaultActorContext(empty, this);
-        systemActor = new DefaultActor.ActorBuilder(SYSTEMACTOR).handler(new DefaultActorHandler()).context(newContext).build().start();
+        try {
+            systemActor = new DefaultActor.ActorBuilder(SYSTEMACTOR).handler(new DefaultActorHandler()).context(newContext).build().start();
+        } catch (Exception ex) {
+            Logger.getLogger(ActorsContainer.class.getName()).log(Level.SEVERE, "An error occurs setting up the Actor container", ex);
+            throw new IllegalStateException("An error occurs setting up the Actor container");
+        }
     }
 
     public void ShutDownNow() {
@@ -71,26 +77,24 @@ public final class ActorsContainer implements IActorContext {
     @Override
     public IActorRef createActor(String pName, IActorHandler pHandler) {
         if (!isAlive.get()) {
-            //TODO: Big mistake!.  Don't return NULL - FIX IT!
             LOGGER.log(Level.WARNING, "System {0} is inactive. Actor {1} is not created.", new Object[]{name, pName});
-            return null;
+            return EmptyActor.getInstance();
         }
 
         //TODO: Improve error handling when creating actors!
-        IActorRef newActor = null;
+        IActorRef newActor;
         try {
-            systemActor.getContext().createActor(pName, pHandler);
+            newActor = systemActor.getContext().createActor(pName, pHandler);
 
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.WARNING, "Error in System {0} creating Actor {1}: {2}.", new Object[]{name, pName, e});
+            newActor = EmptyActor.getInstance();
         }
         return newActor;
-
     }
 
     @Override
     public IActorRef findActor(String pName) {
-        //TODO: Find an actor by his name across entire system
         if (pName == null) {
             return EmptyActor.getInstance();
         }
@@ -106,7 +110,9 @@ public final class ActorsContainer implements IActorContext {
             String names[] = pName.split("/");
 
             IActorRef tmpParent = systemActor.getContext().getChildren().get(names[0]);
-            if (tmpParent == null) return EmptyActor.getInstance();
+            if (tmpParent == null) {
+                return EmptyActor.getInstance();
+            }
             for (int i = 1; i < names.length; i++) {
                 IActorRef tmpChild = tmpParent.getContext().getChildren().get(names[i]);
                 if (tmpChild == null) {
@@ -157,8 +163,7 @@ public final class ActorsContainer implements IActorContext {
 
     @Override
     public IActorRef getParent() {
-        //TODO: check if return empty actor or return /user actor
-        return null;
+        return systemActor;
     }
 
     @Override
@@ -178,6 +183,16 @@ public final class ActorsContainer implements IActorContext {
     @Override
     public ExecutorService getExecutor() {
         return workpool;
+    }
+
+    @Override
+    public void setMyself(IActorRef pMyself) {
+
+    }
+
+    @Override
+    public IActorRef getMyself() {
+        return systemActor;
     }
 
 }

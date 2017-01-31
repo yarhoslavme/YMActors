@@ -43,7 +43,6 @@ public class YMActors {
     public static void main(String[] args) throws InterruptedException {
         // TODO code application logic here
 
-        ac.start();
         YMActors yma = new YMActors();
 
         yma.test1();
@@ -54,7 +53,7 @@ public class YMActors {
         try {
             status.start();
 
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 100000; i++) {
                 IActorRef ca = ac.createActor("CONTADOR" + i, new ContadorActor(1000));
             }
             /*

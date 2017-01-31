@@ -7,7 +7,7 @@ import com.yarhoslav.ymactors.core.interfaces.ICoreMessage;
  *
  * @author YarhoslavME
  */
-public final class DefaultMsg implements ICoreMessage {
+public class DefaultMsg implements ICoreMessage {
     private final IActorRef sender;
     private final Object data;
 

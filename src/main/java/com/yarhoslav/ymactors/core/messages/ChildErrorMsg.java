@@ -6,9 +6,9 @@ import com.yarhoslav.ymactors.core.interfaces.IActorRef;
  *
  * @author YarhoslavME
  */
-public final class BroadCastMsg extends DefaultMsg {
+public final class ChildErrorMsg extends DefaultMsg {
     
-    public BroadCastMsg(final IActorRef pSender, final Object pData) {
+    public ChildErrorMsg(final IActorRef pSender, final Exception pData) {
         super(pSender, pData);
     }   
 }

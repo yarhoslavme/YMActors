@@ -1,7 +1,6 @@
 package com.yarhoslav.ymactors.core.interfaces;
 
 import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
-import java.util.Map;
 
 /**
  *
@@ -18,8 +17,8 @@ public interface IActorRef extends Runnable {
     public boolean isAlive();
 
     public boolean isIdle();
-
-    public IActorRef start();
+    
+    public IActorRef start() throws IllegalStateException;
 
     public void tell(Object pData);
 

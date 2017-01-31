@@ -6,6 +6,7 @@ import com.yarhoslav.ymactors.core.interfaces.ICoreMessage;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
 import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
+import com.yarhoslav.ymactors.core.messages.ChildErrorMsg;
 import com.yarhoslav.ymactors.core.messages.DeathMsg;
 import com.yarhoslav.ymactors.core.messages.DefaultMsg;
 import com.yarhoslav.ymactors.core.messages.PoisonPill;
@@ -58,6 +59,7 @@ public class DefaultActor implements IActorRef {
         IActorRef build() {
             IActorRef newActor = new DefaultActor(this);
             handler.setMyself(newActor);
+            context.setMyself(newActor);
             return newActor;
         }
 
@@ -77,45 +79,38 @@ public class DefaultActor implements IActorRef {
     }
 
     @Override
-    public IActorRef start() {
+    public IActorRef start() throws IllegalStateException {
         isAlive.set(true);
         isIdle.set(true);
-
         try {
             handler.preStart();
-        } catch (Exception exp) {
-            LOGGER.log(Level.WARNING, "Error starting Actor {0}: {1}.", new Object[]{name, exp});
-            //TODO: Inform the exception to his parent and let him decide what to do
-            this.tell(PoisonPill.getInstance(), this);
-            handleException(exp);
+        } catch (Exception ex) {
+            Logger.getLogger(DefaultActor.class.getName()).log(Level.WARNING, null, ex);
+            throw new IllegalStateException("Error starting Actor.", ex);
         }
-
         return this;
     }
 
     private void stop() {
-        //TODO Send the exceptios to his father
-        LOGGER.log(Level.WARNING, "DefaultActor  STOP");
         isIdle.set(false);
         isAlive.set(false);
         try {
             handler.beforeStop();
         } catch (Exception exp) {
-            LOGGER.log(Level.WARNING, "Error stoping Actor {0}: {1}.", new Object[]{name, exp});
             handleException(exp);
         }
-        getContext().getParent().tell(DeathMsg.getInstance());
+        getContext().getParent().tell(DeathMsg.getInstance(), this);
     }
 
     private void broadcast(BroadCastMsg pMsg) {
-        getContext().getChildren().entrySet().forEach((entry) -> {
+        context.getChildren().entrySet().forEach((entry) -> {
             entry.getValue().tell(pMsg);
         });
     }
 
-    private void handleException(Exception e) {
-        //TODO Send the exceptios to his father
-        LOGGER.log(Level.WARNING, "Actor {0} throws an exception: {1}", new Object[]{name, e});
+    private void handleException(Exception pException) {
+        LOGGER.log(Level.WARNING, "Actor {0} throws an exception: {1}", new Object[]{name, pException});
+        context.getParent().tell(new ChildErrorMsg(this, pException));
     }
 
     private void requestQueue() {
@@ -123,16 +118,14 @@ public class DefaultActor implements IActorRef {
             return;
         }
         if (isIdle.compareAndSet(true, false)) {
-            if (getContext().getContainer().isAlive()) {
-                getContext().getExecutor().execute(this);
+            if (context.getContainer().isAlive()) {
+                context.getExecutor().execute(this);
             }
         }
     }
 
     private void killChild(IActorRef pChild) {
-        //TODO: Remove this line
-        LOGGER.log(Level.INFO, "Removing {0}", new Object[]{pChild.getName(), getContext().getChildren().remove(pChild.getName())});
-        //getContext().getChildren().remove(pChild.getName());
+        context.getChildren().remove(pChild.getName());
     }
 
     @Override
@@ -154,19 +147,17 @@ public class DefaultActor implements IActorRef {
             }
 
             if (_msg.getData() instanceof PoisonPill) {
-                //TODO: Remove this line
-                LOGGER.log(Level.INFO, "{0} procesing PoisonPill.", getName());
                 stop();
                 return;
             }
 
             if (_msg.getData() instanceof DeathMsg) {
-                //TODO: Remove this line
-                LOGGER.log(Level.INFO, "{0} procesing DeathMsg.", getName());
                 killChild(sender);
                 return;
             }
 
+            //TODO: Process ChildErrorMsg
+            
             if (handler != null) {
                 handler.process(_msg.getData());
             }

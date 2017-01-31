@@ -12,15 +12,15 @@ public class DefaultActorHandler implements IActorHandler {
     private IActorRef mySelf;
 
     @Override
-    public void preStart() {
+    public void preStart() throws Exception {
     }
 
     @Override
-    public void beforeStop() {
+    public void beforeStop() throws Exception {
     }
 
     @Override
-    public void process(Object msj) {
+    public void process(Object msj) throws Exception {
     }
 
     @Override
@@ -31,6 +31,10 @@ public class DefaultActorHandler implements IActorHandler {
     @Override
     public void setMyself(IActorRef pMyself) {
         mySelf = pMyself;
+    }
+
+    @Override
+    public void childErrorHanlder(Exception pException, IActorRef pChild) {
     }
 
 }
