@@ -2,12 +2,15 @@ package com.yarhoslav.ymactors.core;
 
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author yarhoslavme
  */
 public class DefaultActorHandler implements IActorHandler {
+    Logger logger = LoggerFactory.getLogger(ActorsUniverse.class);
 
     private IActorRef mySelf;
 
@@ -17,10 +20,6 @@ public class DefaultActorHandler implements IActorHandler {
 
     @Override
     public void beforeStop() throws Exception {
-    }
-
-    @Override
-    public void process(Object msj) throws Exception {
     }
 
     @Override
@@ -34,7 +33,12 @@ public class DefaultActorHandler implements IActorHandler {
     }
 
     @Override
-    public void childErrorHanlder(Exception pException, IActorRef pChild) {
+    public void handleException(Exception pException, IActorRef pChild) {
+        
+    }
+
+    @Override
+    public void process(Object msj, IActorRef pSender) throws Exception {     
     }
 
 }

@@ -10,9 +10,9 @@ public interface IActorHandler {
 
     public void beforeStop() throws Exception;
 
-    public void process(Object msj) throws Exception;
+    public void process(Object msj, IActorRef pSender) throws Exception;
     
-    public void childErrorHanlder(Exception pException, IActorRef pChild);
+    public void handleException(Exception pException, IActorRef pChild);
 
     public IActorRef getMyself();
 

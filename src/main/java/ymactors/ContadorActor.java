@@ -1,10 +1,10 @@
 package ymactors;
 
 import com.yarhoslav.ymactors.core.DefaultActorHandler;
+import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.messages.PoisonPill;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import static java.util.logging.Logger.getLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -12,7 +12,7 @@ import static java.util.logging.Logger.getLogger;
  */
 public class ContadorActor extends DefaultActorHandler {
     
-    static final Logger LOGGER = getLogger(ContadorActor.class.getName());
+    Logger logger = LoggerFactory.getLogger(ContadorActor.class);
     private int contador;
     
     public ContadorActor(int pInicial) {
@@ -20,13 +20,13 @@ public class ContadorActor extends DefaultActorHandler {
     }
 
     @Override
-    public void process(Object msj) {
+    public void process(Object msj, IActorRef pSender) {
         if (msj.equals("contar")) {
             contador--;
             if (contador <= 0) {
-                  this.getMyself().tell(PoisonPill.getInstance());
+                  getMyself().tell(PoisonPill.getInstance(), getMyself());
             } else {
-                this.getMyself().tell("contar", getMyself());
+                getMyself().tell("contar", getMyself());
             }
         }
     }

@@ -2,7 +2,6 @@ package com.yarhoslav.ymactors.core.actors;
 
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
-import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
 
 /**
  *
@@ -18,10 +17,6 @@ public final class EmptyActor implements IActorRef {
         return SINGLETON;
     }
 
-    public void setContext(IActorContext pContext) {
-        context = pContext;
-    }
-
     @Override
     public String getName() {
         return EMPTYNAME;
@@ -29,21 +24,11 @@ public final class EmptyActor implements IActorRef {
 
     @Override
     public IActorContext getContext() {
-        return context;
-    }
-
-    @Override
-    public IActorRef getSender() {
-        return this;
+        throw new IllegalStateException("Empty actor has not context.");
     }
 
     @Override
     public boolean isAlive() {
-        return false;
-    }
-
-    @Override
-    public boolean isIdle() {
         return false;
     }
 
@@ -54,22 +39,12 @@ public final class EmptyActor implements IActorRef {
 
     @Override
     public void run() {
-
-    }
-
-    @Override
-    public void tell(Object pData) {
-
-    }
-
-    @Override
-    public void tell(BroadCastMsg pMsg) {
-
+        throw new IllegalStateException("Empty actor can not enqueued.");
     }
 
     @Override
     public void tell(Object pData, IActorRef pSender) {
-
+        throw new IllegalStateException("Empty actor can not receive messages.");
     }
 
 }

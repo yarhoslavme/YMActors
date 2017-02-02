@@ -1,6 +1,6 @@
 package ymactors;
 
-import com.yarhoslav.ymactors.core.ActorsContainer;
+import com.yarhoslav.ymactors.core.ActorsUniverse;
 import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import java.io.BufferedReader;
@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class YMActors {
 
     static final long inicio = currentTimeMillis();
-    static final ActorsContainer ac = new ActorsContainer("TEST");
+    static final ActorsUniverse universe = new ActorsUniverse("TEST");
     static final Runnable hilo = new Runnable() {
         public AtomicBoolean parar = new AtomicBoolean(false);
 
@@ -30,7 +30,7 @@ public class YMActors {
                     parar.set(true);
                 }
 
-                System.out.println(ac.getEstadistica() + " Tiempo:" + (currentTimeMillis() - inicio));
+                System.out.println(universe.getEstadistica() + " Tiempo:" + (currentTimeMillis() - inicio));
             }
         }
     };
@@ -51,25 +51,25 @@ public class YMActors {
 
     void test1() {
         try {
+            universe.start();
             status.start();
 
-            for (int i = 0; i < 100000; i++) {
-                IActorRef ca = ac.createActor("CONTADOR" + i, new ContadorActor(1000));
+            for (int i = 0; i < 1; i++) {
+                IActorRef ca = universe.createActor("CONTADOR" + i, new ContadorActor(2));
             }
-            /*
-            IActorRef tmpActor = ac.findActor("CONTADOR100");
+
+            IActorRef tmpActor = universe.findActor("/CONTADOR0");
             tmpActor.getContext().createActor("OTRO", null);
-            System.out.println(ac.findActor("CONTADOR100").getName());
-            System.out.println(ac.findActor("OTRO").getName());
-            tmpActor = ac.findActor("CONTADOR100/OTRO");
+            System.out.println(universe.findActor("/CONTADOR100").getName());
+            System.out.println(universe.findActor("/OTRO").getName());
+            tmpActor = universe.findActor("/CONTADOR100/OTRO");
             tmpActor.getContext().createActor("OTRO", null);
             tmpActor.getContext().createActor("PERRO", null);
-            tmpActor = ac.findActor("CONTADOR100/OTRO");
+            tmpActor = universe.findActor("/CONTADOR100/OTRO");
             System.out.println(tmpActor.getContext().findActor("OTRO").getName());
             System.out.println(tmpActor.getContext().findActor("PERRO").getName());
-            */
-            
-            ac.broadcast("contar", EmptyActor.getInstance());
+
+            universe.tell("contar", EmptyActor.getInstance());
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -80,7 +80,7 @@ public class YMActors {
             } catch (IOException ex) {
                 System.out.println(ex.getMessage());
             }
-            ac.ShutDownNow();
+            universe.ShutDownNow();
             status.interrupt();
         }
     }

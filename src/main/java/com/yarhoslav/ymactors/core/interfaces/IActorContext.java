@@ -1,7 +1,6 @@
 package com.yarhoslav.ymactors.core.interfaces;
 
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
+import java.util.Iterator;
 
 /**
  *
@@ -12,19 +11,19 @@ public interface IActorContext {
     public IActorRef createActor(String pName, IActorHandler pHandler) throws IllegalArgumentException, IllegalStateException;
 
     public IActorRef findActor(String pName);
+
+    public void forgetActor(IActorRef pActor);
     
+    public void queueUp(IActorRef pActor);
+    
+    public Iterator getChildren();
+
     public IActorContext getContainer();
-    
+
     public IActorRef getParent();
     
-    public Map<String, IActorRef> getChildren();
-    
-    public boolean isAlive();
-    
-    public ExecutorService getExecutor();
-    
-    public void setMyself(IActorRef pMyself);
-    
     public IActorRef getMyself();
+    
+    public void setMyself(IActorRef pActor);
 
 }

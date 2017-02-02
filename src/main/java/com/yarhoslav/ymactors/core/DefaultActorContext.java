@@ -4,9 +4,9 @@ import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 
 /**
  *
@@ -20,7 +20,7 @@ public class DefaultActorContext implements IActorContext {
     private IActorRef mySelf;
     //TOOD: Verify whether IActorContext can be used to represent the Container.
 
-    public DefaultActorContext(IActorRef pParent, IActorContext pContainer) {
+    public DefaultActorContext(IActorRef pParent) {
         children = new ConcurrentHashMap<>();
         parent = pParent;
         container = parent.getContext().getContainer();
@@ -28,20 +28,20 @@ public class DefaultActorContext implements IActorContext {
 
     @Override
     public IActorRef createActor(String pName, IActorHandler pHandler) throws IllegalArgumentException, IllegalStateException {
-        if (children.containsKey(pName)) return children.get(pName);
-        IActorContext newContext = new DefaultActorContext(getMyself(), container);
-        IActorRef newActor = new DefaultActor.ActorBuilder(pName).handler(pHandler).context(newContext).build().start();
+        if (children.containsKey(pName)) {
+            return children.get(pName);
+        }
+        IActorContext newContext = new DefaultActorContext(getMyself());
+        IActorRef newActor = new DefaultActor.ActorBuilder(pName).withHandler(pHandler).withContext(newContext).build().start();
         children.put(pName, newActor);
-        //TODO: Check what to do whether the name already exists. should it raise an exception?
         return newActor;
     }
 
     @Override
     public IActorRef findActor(String pName) {
         IActorRef tmpActor;
-        if (children.containsKey(pName)) {
-            tmpActor = children.get(pName);
-        } else {
+        tmpActor = children.get(pName);
+        if (tmpActor == null) {
             tmpActor = EmptyActor.getInstance();
         }
         return tmpActor;
@@ -58,28 +58,29 @@ public class DefaultActorContext implements IActorContext {
     }
 
     @Override
-    public Map<String, IActorRef> getChildren() {
-        return children;
+    public void forgetActor(IActorRef pActor) {
+        children.remove(pActor.getName());
     }
 
     @Override
-    public boolean isAlive() {
-        return container.isAlive();
+    public Iterator getChildren() {
+        return children.entrySet().iterator();
     }
 
     @Override
-    public ExecutorService getExecutor() {
-        return container.getExecutor();
-    }
-
-    @Override
-    public void setMyself(IActorRef pMyself) {
-        mySelf = pMyself;
+    public void queueUp(IActorRef pActor) {
+        //TODO: Posibilidad de asignar otro executorservice.
+        container.queueUp(pActor);
     }
 
     @Override
     public IActorRef getMyself() {
         return mySelf;
+    }
+
+    @Override
+    public void setMyself(IActorRef pActor) {
+        mySelf = pActor;
     }
 
 }

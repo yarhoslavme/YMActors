@@ -1,46 +1,44 @@
 package com.yarhoslav.ymactors.core;
 
-import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
-import com.yarhoslav.ymactors.core.interfaces.ICoreMessage;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
-import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
-import com.yarhoslav.ymactors.core.messages.ChildErrorMsg;
+import com.yarhoslav.ymactors.core.messages.ErrorMsg;
 import com.yarhoslav.ymactors.core.messages.DeathMsg;
-import com.yarhoslav.ymactors.core.messages.DefaultMsg;
+import com.yarhoslav.ymactors.core.messages.BasicMsg;
 import com.yarhoslav.ymactors.core.messages.PoisonPill;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import static java.util.logging.Logger.getLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
+import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  *
  * @author YarhoslavME
  */
-public class DefaultActor implements IActorRef {
+public final class DefaultActor implements IActorRef {
 
-    static final Logger LOGGER = getLogger(DefaultActor.class.getName());
-
-    private final AtomicBoolean isIdle;
-    private final AtomicBoolean isAlive;
+    private final Logger logger = LoggerFactory.getLogger(ActorsUniverse.class);
+    private final AtomicBoolean isQueued;
+    private boolean isAlive;
     private final String name;
     private final IActorHandler handler;
     private final IActorContext context;
-    private final Queue<ICoreMessage> mailBox = new ConcurrentLinkedQueue<>();
+    private final Queue<IActorMsg> mailBox = new ConcurrentLinkedQueue<>();
     //TODO: Check whether worth include a systemMailBox
-    private IActorRef sender;
+    private long heartbeats;
 
     private DefaultActor(ActorBuilder pBuilder) {
         name = pBuilder.name;
         context = pBuilder.context;
         handler = pBuilder.handler;
-        sender = null;
-        isIdle = new AtomicBoolean(false);
-        isAlive = new AtomicBoolean(false);
+        isQueued = new AtomicBoolean(false);
+        isAlive = false;
     }
 
     public static class ActorBuilder {
@@ -56,14 +54,14 @@ public class DefaultActor implements IActorRef {
             name = pName;
         }
 
-        IActorRef build() {
+        public IActorRef build() {
             IActorRef newActor = new DefaultActor(this);
             handler.setMyself(newActor);
-            context.setMyself(newActor);
             return newActor;
         }
 
-        public ActorBuilder handler(IActorHandler pHandler) {
+        public ActorBuilder withHandler(IActorHandler pHandler) {
+            //TODO: throw an exception whether handler is null 
             if (pHandler == null) {
                 handler = new DefaultActorHandler();
             } else {
@@ -72,7 +70,7 @@ public class DefaultActor implements IActorRef {
             return this;
         }
 
-        public ActorBuilder context(IActorContext pContext) {
+        public ActorBuilder withContext(IActorContext pContext) {
             context = pContext;
             return this;
         }
@@ -80,111 +78,98 @@ public class DefaultActor implements IActorRef {
 
     @Override
     public IActorRef start() throws IllegalStateException {
-        isAlive.set(true);
-        isIdle.set(true);
+        isAlive = true;
+        isQueued.set(false);
+        heartbeats = 0;
         try {
             handler.preStart();
         } catch (Exception ex) {
-            Logger.getLogger(DefaultActor.class.getName()).log(Level.WARNING, null, ex);
+            logger.warn("Actor {} throws an exception in preStart method while created: {}", name, ex.getMessage());
             throw new IllegalStateException("Error starting Actor.", ex);
         }
         return this;
     }
 
     private void stop() {
-        isIdle.set(false);
-        isAlive.set(false);
+        isQueued.set(false);
+        isAlive = false;
         try {
             handler.beforeStop();
-        } catch (Exception exp) {
-            handleException(exp);
+        } catch (Exception ex) {
+            informException(new ErrorMsg(ex, this));
+        } finally {
+            context.getParent().tell(DeathMsg.getInstance(), this);
         }
-        getContext().getParent().tell(DeathMsg.getInstance(), this);
     }
 
     private void broadcast(BroadCastMsg pMsg) {
-        context.getChildren().entrySet().forEach((entry) -> {
-            entry.getValue().tell(pMsg);
-        });
+        Iterator entries = context.getChildren();
+        while (entries.hasNext()) {
+            Map.Entry entry = (Map.Entry) entries.next();
+            IActorRef child = (IActorRef) entry.getValue();
+            child.tell(pMsg, this);
+        }
     }
 
-    private void handleException(Exception pException) {
-        LOGGER.log(Level.WARNING, "Actor {0} throws an exception: {1}", new Object[]{name, pException});
-        context.getParent().tell(new ChildErrorMsg(this, pException));
+    public void informException(ErrorMsg pMsg) {
+        logger.warn("Actor {} throws an exception: ", name, pMsg.takeData());
+        context.getParent().tell(pMsg, this);
     }
 
     private void requestQueue() {
-        if (!isAlive.get()) {
+        if (!isAlive) {
             return;
         }
-        if (isIdle.compareAndSet(true, false)) {
-            if (context.getContainer().isAlive()) {
-                context.getExecutor().execute(this);
-            }
+        if (isQueued.compareAndSet(false, true)) {
+            context.getContainer().queueUp(this);
         }
-    }
-
-    private void killChild(IActorRef pChild) {
-        context.getChildren().remove(pChild.getName());
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     @Override
     public void run() {
-        if (!isAlive.get()) {
+        if (!isAlive) {
             return;
         }
-        try {
-            ICoreMessage _msg = mailBox.poll();
-            sender = _msg.getSender();
+        heartbeats++;
 
-            if (_msg instanceof BroadCastMsg) {
-                broadcast((BroadCastMsg) _msg);
-            }
-
-            if (_msg.getData() instanceof PoisonPill) {
-                stop();
-                return;
-            }
-
-            if (_msg.getData() instanceof DeathMsg) {
-                killChild(sender);
-                return;
-            }
-
-            //TODO: Process ChildErrorMsg
-            
-            if (handler != null) {
-                handler.process(_msg.getData());
-            }
-        } catch (Exception e) {
-            handleException(e);
-        } finally {
-            //TODO: Que pasa con los mensajes no procesados?
-            isIdle.set(true);
-            if (!mailBox.isEmpty()) {
-                requestQueue();
-            }
+        Object msg = mailBox.poll();
+        if (msg == null) {
+            return;
         }
-    }
 
-    @Override
-    public IActorRef getSender() {
-        return sender;
+        if (msg instanceof IActorMsg) {
+            IActorMsg receivedMsg = (IActorMsg) msg;
+            Object receivedData = receivedMsg.takeData();
+            IActorRef receivedSender = receivedMsg.sender();
+
+            if (receivedData instanceof BroadCastMsg) {
+                BroadCastMsg payLoad = (BroadCastMsg) receivedData;
+                broadcast(payLoad);
+                receivedData = payLoad.takeData();
+                receivedSender = payLoad.sender();
+            }
+            if (receivedData instanceof PoisonPill) {
+                stop();
+            } else if (receivedData instanceof ErrorMsg) {
+                ErrorMsg payLoad = (ErrorMsg) receivedData;
+                handler.handleException(payLoad.takeData(), payLoad.sender());
+            } else if (receivedData instanceof DeathMsg) {
+                context.forgetActor(receivedSender);
+            } else {
+                try {
+                    handler.process(receivedData, receivedSender);
+                } catch (Exception ex) {
+                    informException(new ErrorMsg(ex, receivedSender));
+                }
+            }
+        } else {
+            informException(new ErrorMsg(new IllegalArgumentException("Message is not IActorMsg type."), this));
+        }
     }
 
     @Override
     public boolean isAlive() {
-        return isAlive.get();
-    }
-
-    @Override
-    public boolean isIdle() {
-        return isIdle.get();
+        return isAlive;
     }
 
     @Override
@@ -193,28 +178,18 @@ public class DefaultActor implements IActorRef {
     }
 
     @Override
-    public void tell(Object pData) {
-        tell(pData, EmptyActor.getInstance());
-    }
-
-    @Override
-    public void tell(BroadCastMsg pMsg) {
-        if (!isAlive.get()) {
-            return;
-        }
-        if (mailBox.offer(pMsg)) {
-            requestQueue();
-        }
-    }
-
-    @Override
     public void tell(Object pData, IActorRef pSender) {
-        if (!isAlive.get()) {
+        if (!isAlive) {
             return;
         }
-        if (mailBox.offer(new DefaultMsg(pSender, pData))) {
+        if (mailBox.offer(new BasicMsg(pData, pSender))) {
             requestQueue();
         }
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
 }
