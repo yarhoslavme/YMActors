@@ -1,7 +1,6 @@
 package com.yarhoslav.ymactors.core;
 
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
 import com.yarhoslav.ymactors.core.messages.ErrorMsg;
 import com.yarhoslav.ymactors.core.messages.DeathMsg;
@@ -16,12 +15,13 @@ import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
 import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
 import java.util.Iterator;
 import java.util.Map;
+import com.yarhoslav.ymactors.core.interfaces.ActorRef;
 
 /**
  *
  * @author YarhoslavME
  */
-public final class DefaultActor implements IActorRef {
+public final class DefaultActor implements ActorRef {
 
     private final Logger logger = LoggerFactory.getLogger(ActorsUniverse.class);
     private final AtomicBoolean isQueued;
@@ -54,8 +54,8 @@ public final class DefaultActor implements IActorRef {
             name = pName;
         }
 
-        public IActorRef build() {
-            IActorRef newActor = new DefaultActor(this);
+        public ActorRef build() {
+            ActorRef newActor = new DefaultActor(this);
             handler.setMyself(newActor);
             return newActor;
         }
@@ -77,7 +77,7 @@ public final class DefaultActor implements IActorRef {
     }
 
     @Override
-    public IActorRef start() throws IllegalStateException {
+    public ActorRef start() throws IllegalStateException {
         isAlive = true;
         isQueued.set(false);
         heartbeats = 0;
@@ -106,7 +106,7 @@ public final class DefaultActor implements IActorRef {
         Iterator entries = context.getChildren();
         while (entries.hasNext()) {
             Map.Entry entry = (Map.Entry) entries.next();
-            IActorRef child = (IActorRef) entry.getValue();
+            ActorRef child = (ActorRef) entry.getValue();
             child.tell(pMsg, this);
         }
     }
@@ -121,7 +121,7 @@ public final class DefaultActor implements IActorRef {
             return;
         }
         if (isQueued.compareAndSet(false, true)) {
-            context.getContainer().queueUp(this);
+            context.getSystem().queueUp(this);
         }
     }
 
@@ -140,7 +140,7 @@ public final class DefaultActor implements IActorRef {
         if (msg instanceof IActorMsg) {
             IActorMsg receivedMsg = (IActorMsg) msg;
             Object receivedData = receivedMsg.takeData();
-            IActorRef receivedSender = receivedMsg.sender();
+            ActorRef receivedSender = receivedMsg.sender();
 
             if (receivedData instanceof BroadCastMsg) {
                 BroadCastMsg payLoad = (BroadCastMsg) receivedData;
@@ -178,7 +178,7 @@ public final class DefaultActor implements IActorRef {
     }
 
     @Override
-    public void tell(Object pData, IActorRef pSender) {
+    public void tell(Object pData, ActorRef pSender) {
         if (!isAlive) {
             return;
         }

@@ -10,11 +10,11 @@ public interface IActorHandler {
 
     public void beforeStop() throws Exception;
 
-    public void process(Object msj, IActorRef pSender) throws Exception;
+    public void process(Object msj, ActorRef pSender) throws Exception;
     
-    public void handleException(Exception pException, IActorRef pChild);
+    public void handleException(Exception pException, ActorRef pChild);
 
-    public IActorRef getMyself();
+    public ActorRef getMyself();
 
-    public void setMyself(IActorRef pMyself);
+    public void setMyself(ActorRef pMyself);
 }

@@ -9,16 +9,16 @@ import com.yarhoslav.ymactors.core.DefaultActor;
 import com.yarhoslav.ymactors.core.DefaultActorContext;
 import com.yarhoslav.ymactors.core.DefaultActorHandler;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.interfaces.ActorRef;
 
 /**
  *
  * @author yarhoslavme
  */
-public final class SystemActor implements IActorRef {
+public final class SystemActor implements ActorRef {
 
     private static final String SYSTEMACTOR = "SYSTEM";
-    private IActorRef minion;
+    private ActorRef minion;
     private final IActorContext universeContext;
 
     public SystemActor(IActorContext pContext) {
@@ -26,12 +26,12 @@ public final class SystemActor implements IActorRef {
     }
 
     @Override
-    public void tell(Object pData, IActorRef pSender) {
+    public void tell(Object pData, ActorRef pSender) {
         minion.tell(pData, pSender);
     }
 
     @Override
-    public IActorRef start() throws IllegalStateException {
+    public ActorRef start() throws IllegalStateException {
         minion = new DefaultActor.ActorBuilder(SYSTEMACTOR).withHandler(new DefaultActorHandler()).withContext(new DefaultActorContext(this)).build().start();
         return this;
     }

@@ -3,7 +3,6 @@ package com.yarhoslav.ymactors.core;
 import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.actors.SystemActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
 import static java.lang.System.currentTimeMillis;
 import java.util.Iterator;
@@ -16,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.yarhoslav.ymactors.core.interfaces.ActorRef;
 
 /**
  *
@@ -31,7 +31,7 @@ public final class ActorsUniverse {
     private final ExecutorService living = new ForkJoinPool();
     private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1); //TODO: Create APPConfig with external config file
     private final long startTime = currentTimeMillis();
-    private IActorRef systemActor;
+    private ActorRef systemActor;
 
     public ActorsUniverse(String pName) throws IllegalArgumentException {
         if (pName == null) {
@@ -69,13 +69,13 @@ public final class ActorsUniverse {
         }
     }
 
-    public IActorRef createActor(String pName, IActorHandler pHandler) {
+    public ActorRef createActor(String pName, IActorHandler pHandler) {
         if (!isAlive.get()) {
             logger.warn("System {} is inactive. Actor {} can not be created.", new Object[]{name, pName});
             return EmptyActor.getInstance();
         }
 
-        IActorRef newActor;
+        ActorRef newActor;
         try {
             newActor = systemActor.getContext().createActor(pName, pHandler);
         } catch (IllegalArgumentException e) {
@@ -85,7 +85,7 @@ public final class ActorsUniverse {
         return newActor;
     }
 
-    public IActorRef findActor(String pName) {
+    public ActorRef findActor(String pName) {
         if (!isAlive.get()) {
             logger.warn("System {} is inactive. There are no actors available.", name);
             return EmptyActor.getInstance();
@@ -98,12 +98,12 @@ public final class ActorsUniverse {
         if (pName.startsWith("/")) {
             pName = pName.substring(1);
             String names[] = pName.split("/");
-            IActorRef tmpParent = systemActor.getContext().findActor(names[0]);
+            ActorRef tmpParent = systemActor.getContext().findActor(names[0]);
             if (tmpParent == null) {
                 return EmptyActor.getInstance();
             }
             for (int i = 1; i < names.length; i++) {
-                IActorRef tmpChild = tmpParent.getContext().findActor(names[i]);
+                ActorRef tmpChild = tmpParent.getContext().findActor(names[i]);
                 if (tmpChild == null) {
                     return EmptyActor.getInstance();
                 }
@@ -116,7 +116,7 @@ public final class ActorsUniverse {
         }
     }
 
-    public void queueUp(IActorRef pActor) {
+    public void queueUp(ActorRef pActor) {
         if (isAlive.get()) {
             living.execute(pActor);
         } else {
@@ -124,11 +124,11 @@ public final class ActorsUniverse {
         }
     }
 
-    public void forgetActor(IActorRef pActor) {
+    public void forgetActor(ActorRef pActor) {
         systemActor.getContext().forgetActor(pActor);
     }
 
-    public ScheduledFuture schedule(long demoraInicial, long periodo, final IActorRef destino, final Object mensaje) {
+    public ScheduledFuture schedule(long demoraInicial, long periodo, final ActorRef destino, final Object mensaje) {
         return scheduler.scheduleWithFixedDelay(() -> {
             destino.tell(mensaje, null);
         }, demoraInicial, periodo, TimeUnit.MILLISECONDS);
@@ -147,11 +147,11 @@ public final class ActorsUniverse {
         return currentTimeMillis() - startTime;
     }
     
-    public IActorRef getSystemActor() {
+    public ActorRef getSystemActor() {
         return systemActor;
     }
     
-    public void tell(Object pData, IActorRef pSender) {
+    public void tell(Object pData, ActorRef pSender) {
         systemActor.tell(pData, pSender);
     }
 

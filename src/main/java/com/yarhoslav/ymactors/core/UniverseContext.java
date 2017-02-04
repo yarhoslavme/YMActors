@@ -3,10 +3,10 @@ package com.yarhoslav.ymactors.core;
 import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.yarhoslav.ymactors.core.interfaces.ActorRef;
 
 /**
  *
@@ -22,32 +22,32 @@ public final class UniverseContext implements IActorContext {
     }
 
     @Override
-    public IActorRef createActor(String pName, IActorHandler pHandler) {
+    public ActorRef createActor(String pName, IActorHandler pHandler) {
         return universe.createActor(pName, pHandler);
     }
 
     @Override
-    public IActorRef findActor(String pName) {
+    public ActorRef findActor(String pName) {
         return universe.findActor(pName);
     }
 
     @Override
-    public void queueUp(IActorRef pActor) {
+    public void queueUp(ActorRef pActor) {
         universe.queueUp(pActor);
     }
 
     @Override
-    public IActorContext getContainer() {
+    public IActorContext getSystem() {
         return this;
     }
 
     @Override
-    public IActorRef getParent() {
+    public ActorRef getParent() {
         return EmptyActor.getInstance();
     }
 
     @Override
-    public void forgetActor(IActorRef pActor) {
+    public void forgetActor(ActorRef pActor) {
         universe.forgetActor(pActor);
     }
 
@@ -57,12 +57,12 @@ public final class UniverseContext implements IActorContext {
     }
 
     @Override
-    public IActorRef getMyself() {
+    public ActorRef getMyself() {
         return universe.getSystemActor();
     }
 
     @Override
-    public void setMyself(IActorRef pActor) {
+    public void setMyself(ActorRef pActor) {
         
     }
     

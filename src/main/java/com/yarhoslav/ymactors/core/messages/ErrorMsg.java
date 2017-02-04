@@ -1,7 +1,7 @@
 package com.yarhoslav.ymactors.core.messages;
 
 import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.interfaces.ActorRef;
 
 /**
  *
@@ -10,12 +10,12 @@ import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 public final class ErrorMsg implements IActorMsg {
     private final BasicMsg msg;
     
-    public ErrorMsg(final Exception pData, final IActorRef pSender) {
+    public ErrorMsg(final Exception pData, final ActorRef pSender) {
         msg = new BasicMsg(pData, pSender);
     }   
 
     @Override
-    public IActorRef sender() {
+    public ActorRef sender() {
         return msg.sender();
     }
 

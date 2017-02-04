@@ -1,13 +1,13 @@
 package com.yarhoslav.ymactors.core.actors;
 
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.interfaces.ActorRef;
 
 /**
  *
  * @author yarhoslavme
  */
-public final class EmptyActor implements IActorRef {
+public final class EmptyActor implements ActorRef {
 
     private static final String EMPTYNAME = "EMPTYACTOR";
     private static final EmptyActor SINGLETON = new EmptyActor();
@@ -33,7 +33,7 @@ public final class EmptyActor implements IActorRef {
     }
 
     @Override
-    public IActorRef start() {
+    public ActorRef start() {
         return this;
     }
 
@@ -43,7 +43,7 @@ public final class EmptyActor implements IActorRef {
     }
 
     @Override
-    public void tell(Object pData, IActorRef pSender) {
+    public void tell(Object pData, ActorRef pSender) {
         throw new IllegalStateException("Empty actor can not receive messages.");
     }
 

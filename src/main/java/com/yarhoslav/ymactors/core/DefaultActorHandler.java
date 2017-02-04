@@ -1,9 +1,9 @@
 package com.yarhoslav.ymactors.core;
 
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.yarhoslav.ymactors.core.interfaces.ActorRef;
 
 /**
  *
@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 public class DefaultActorHandler implements IActorHandler {
     Logger logger = LoggerFactory.getLogger(ActorsUniverse.class);
 
-    private IActorRef mySelf;
+    private ActorRef mySelf;
 
     @Override
     public void preStart() throws Exception {
@@ -23,22 +23,22 @@ public class DefaultActorHandler implements IActorHandler {
     }
 
     @Override
-    public IActorRef getMyself() {
+    public ActorRef getMyself() {
         return mySelf;
     }
 
     @Override
-    public void setMyself(IActorRef pMyself) {
+    public void setMyself(ActorRef pMyself) {
         mySelf = pMyself;
     }
 
     @Override
-    public void handleException(Exception pException, IActorRef pChild) {
+    public void handleException(Exception pException, ActorRef pChild) {
         
     }
 
     @Override
-    public void process(Object msj, IActorRef pSender) throws Exception {     
+    public void process(Object msj, ActorRef pSender) throws Exception {     
     }
 
 }

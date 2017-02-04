@@ -8,22 +8,22 @@ import java.util.Iterator;
  */
 public interface IActorContext {
 
-    public IActorRef createActor(String pName, IActorHandler pHandler) throws IllegalArgumentException, IllegalStateException;
+    public ActorRef createActor(String pName, IActorHandler pHandler) throws IllegalArgumentException, IllegalStateException;
 
-    public IActorRef findActor(String pName);
+    public ActorRef findActor(String pName);
 
-    public void forgetActor(IActorRef pActor);
+    public void forgetActor(ActorRef pActor);
     
-    public void queueUp(IActorRef pActor);
+    public void queueUp(ActorRef pActor);
     
     public Iterator getChildren();
 
-    public IActorContext getContainer();
+    public IActorContext getSystem();
 
-    public IActorRef getParent();
+    public ActorRef getParent();
     
-    public IActorRef getMyself();
+    public ActorRef getMyself();
     
-    public void setMyself(IActorRef pActor);
+    public void setMyself(ActorRef pActor);
 
 }

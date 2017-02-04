@@ -2,13 +2,13 @@ package ymactors;
 
 import com.yarhoslav.ymactors.core.ActorsUniverse;
 import com.yarhoslav.ymactors.core.actors.EmptyActor;
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import static java.lang.System.currentTimeMillis;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import com.yarhoslav.ymactors.core.interfaces.ActorRef;
 
 /**
  *
@@ -55,10 +55,10 @@ public class YMActors {
             status.start();
 
             for (int i = 0; i < 1; i++) {
-                IActorRef ca = universe.createActor("CONTADOR" + i, new ContadorActor(2));
+                ActorRef ca = universe.createActor("CONTADOR" + i, new ContadorActor(2));
             }
 
-            IActorRef tmpActor = universe.findActor("/CONTADOR0");
+            ActorRef tmpActor = universe.findActor("/CONTADOR0");
             tmpActor.getContext().createActor("OTRO", null);
             System.out.println(universe.findActor("/CONTADOR100").getName());
             System.out.println(universe.findActor("/OTRO").getName());
