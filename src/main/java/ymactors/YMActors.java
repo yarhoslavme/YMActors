@@ -1,6 +1,6 @@
 package ymactors;
 
-import com.yarhoslav.ymactors.core.ActorsUniverse;
+import com.yarhoslav.ymactors.core.ActorSystem;
 import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,6 +9,7 @@ import static java.lang.System.currentTimeMillis;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import com.yarhoslav.ymactors.core.interfaces.ActorRef;
+import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
 
 /**
  *
@@ -17,7 +18,7 @@ import com.yarhoslav.ymactors.core.interfaces.ActorRef;
 public class YMActors {
 
     static final long inicio = currentTimeMillis();
-    static final ActorsUniverse universe = new ActorsUniverse("TEST");
+    static final ActorSystem universe = new ActorSystem("TEST");
     static final Runnable hilo = new Runnable() {
         public AtomicBoolean parar = new AtomicBoolean(false);
 
@@ -50,26 +51,30 @@ public class YMActors {
     }
 
     void test1() {
+        //TODO: Compare performance with AKKA
         try {
             universe.start();
             status.start();
 
-            for (int i = 0; i < 1; i++) {
-                ActorRef ca = universe.createActor("CONTADOR" + i, new ContadorActor(2));
+            for (int i = 0; i < 100000; i++) {
+                ContadorActor ca = (ContadorActor) universe.newActor(ContadorActor.class, "CONTADOR" + i);
+                ca.setContador(1000);
             }
 
             ActorRef tmpActor = universe.findActor("/CONTADOR0");
-            tmpActor.getContext().createActor("OTRO", null);
-            System.out.println(universe.findActor("/CONTADOR100").getName());
-            System.out.println(universe.findActor("/OTRO").getName());
-            tmpActor = universe.findActor("/CONTADOR100/OTRO");
-            tmpActor.getContext().createActor("OTRO", null);
-            tmpActor.getContext().createActor("PERRO", null);
-            tmpActor = universe.findActor("/CONTADOR100/OTRO");
-            System.out.println(tmpActor.getContext().findActor("OTRO").getName());
-            System.out.println(tmpActor.getContext().findActor("PERRO").getName());
+            System.out.println("/CONTADOR0/"+tmpActor.getName());
+            tmpActor.getContext().newActor(ContadorActor.class, "OTRO");
+            System.out.println("/CONTADOR100/"+universe.findActor("/CONTADOR100").getName());
+            System.out.println("/OTRO/"+universe.findActor("/OTRO").getName());
+            tmpActor = universe.findActor("/CONTADOR0/OTRO");
+            tmpActor.getContext().newActor(ContadorActor.class, "OTRO");
+            tmpActor.getContext().newActor(ContadorActor.class, "PERRO");
+            tmpActor = universe.findActor("/CONTADOR0/OTRO");
+            System.out.println("/CONTADOR0/OTRO/"+tmpActor.getContext().findActor("OTRO").getName());
+            System.out.println("/CONTADOR0/OTRO/"+tmpActor.getContext().findActor("PERRO").getName());
 
-            universe.tell("contar", EmptyActor.getInstance());
+            universe.findActor("/CONTADOR0").tell("contar", EmptyActor.getInstance());
+            universe.tell(new BroadCastMsg("contar", EmptyActor.getInstance()), EmptyActor.getInstance());
 
         } catch (Exception e) {
             System.out.println(e.getMessage());

@@ -11,7 +11,7 @@ public final class BroadCastMsg implements IActorMsg {
 
     private final BasicMsg msg;
 
-    public BroadCastMsg(final Exception pData, final ActorRef pSender) {
+    public BroadCastMsg(final Object pData, final ActorRef pSender) {
         msg = new BasicMsg(pData, pSender);
     }
 
@@ -21,7 +21,7 @@ public final class BroadCastMsg implements IActorMsg {
     }
 
     @Override
-    public Exception takeData() {
-        return (Exception) msg.takeData();
+    public Object takeData() {
+        return msg.takeData();
     }
 }

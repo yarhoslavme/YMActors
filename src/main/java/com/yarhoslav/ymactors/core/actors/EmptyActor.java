@@ -11,7 +11,6 @@ public final class EmptyActor implements ActorRef {
 
     private static final String EMPTYNAME = "EMPTYACTOR";
     private static final EmptyActor SINGLETON = new EmptyActor();
-    private IActorContext context;
 
     public static EmptyActor getInstance() {
         return SINGLETON;
@@ -28,18 +27,8 @@ public final class EmptyActor implements ActorRef {
     }
 
     @Override
-    public boolean isAlive() {
-        return false;
-    }
-
-    @Override
-    public ActorRef start() {
-        return this;
-    }
-
-    @Override
     public void run() {
-        throw new IllegalStateException("Empty actor can not enqueued.");
+        throw new IllegalStateException("Empty actor can not be enqueued.");
     }
 
     @Override
