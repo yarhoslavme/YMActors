@@ -56,9 +56,9 @@ public class YMActors {
             universe.start();
             status.start();
 
-            for (int i = 0; i < 100000; i++) {
+            for (int i = 0; i < 100; i++) {
                 ContadorActor ca = (ContadorActor) universe.newActor(ContadorActor.class, "CONTADOR" + i);
-                ca.setContador(1000);
+                ca.setContador(1000000);
             }
 
             ActorRef tmpActor = universe.findActor("/CONTADOR0");
@@ -73,7 +73,7 @@ public class YMActors {
             System.out.println("/CONTADOR0/OTRO/"+tmpActor.getContext().findActor("OTRO").getName());
             System.out.println("/CONTADOR0/OTRO/"+tmpActor.getContext().findActor("PERRO").getName());
 
-            universe.findActor("/CONTADOR0").tell("contar", EmptyActor.getInstance());
+            //universe.findActor("/CONTADOR0").tell("contar", EmptyActor.getInstance());
             universe.tell(new BroadCastMsg("contar", EmptyActor.getInstance()), EmptyActor.getInstance());
 
         } catch (Exception e) {

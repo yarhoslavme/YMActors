@@ -92,6 +92,7 @@ public class ActorSystem {
         }
 
         tmp = tmp + " Up:" + getUpTime();
+        tmp = tmp + " System Heartbeats:" + universeActor.getHeartbeats();
         tmp = tmp + " Actores:" + i + " Executor service:" + living.toString();
 
         return tmp;
