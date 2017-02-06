@@ -1,5 +1,6 @@
 package com.yarhoslav.ymactors.core;
 
+import com.yarhoslav.ymactors.core.actors.BaseActor;
 import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.actors.UniverseActor;
 import com.yarhoslav.ymactors.core.interfaces.ActorRef;
@@ -40,8 +41,9 @@ public class ActorSystem {
     }
 
     public void start() {
-        universeActor = (UniverseActor) ActorsFactory.createActor(UniverseActor.class, UniverseActor.SYSTEMACTOR);
+        universeActor = new UniverseActor();
         UniverseContext newContext = new UniverseContext(universeActor, EmptyActor.getInstance(), this);
+        universeActor.setName(UniverseActor.SYSTEMACTOR);
         universeActor.setContext(newContext);
         universeActor.start();
         isAlive.set(true);
@@ -78,7 +80,7 @@ public class ActorSystem {
         }
     }
 
-    public ActorRef newActor(Class pActorType, String pName) {
+    public ActorRef newActor(BaseActor pActorType, String pName) {
         return universeActor.getContext().newActor(pActorType, pName);
     }
 

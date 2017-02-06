@@ -23,7 +23,7 @@ public final class UniverseContext implements IActorContext {
     }
 
     @Override
-    public ActorRef newActor(Class pActorType, String pName) throws IllegalArgumentException, IllegalStateException {
+    public ActorRef newActor(BaseActor pActorType, String pName) throws IllegalArgumentException, IllegalStateException {
         return context.newActor(pActorType, pName);
     }
 

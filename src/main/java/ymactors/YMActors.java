@@ -57,18 +57,17 @@ public class YMActors {
             status.start();
 
             for (int i = 0; i < 100; i++) {
-                ContadorActor ca = (ContadorActor) universe.newActor(ContadorActor.class, "CONTADOR" + i);
-                ca.setContador(1000000);
+                ContadorActor ca = (ContadorActor) universe.newActor(new ContadorActor(1000000), "CONTADOR" + i);
             }
 
             ActorRef tmpActor = universe.findActor("/CONTADOR0");
             System.out.println("/CONTADOR0/"+tmpActor.getName());
-            tmpActor.getContext().newActor(ContadorActor.class, "OTRO");
+            tmpActor.getContext().newActor(new ContadorActor(5), "OTRO");
             System.out.println("/CONTADOR100/"+universe.findActor("/CONTADOR100").getName());
             System.out.println("/OTRO/"+universe.findActor("/OTRO").getName());
             tmpActor = universe.findActor("/CONTADOR0/OTRO");
-            tmpActor.getContext().newActor(ContadorActor.class, "OTRO");
-            tmpActor.getContext().newActor(ContadorActor.class, "PERRO");
+            tmpActor.getContext().newActor(new ContadorActor(2), "OTRO");
+            tmpActor.getContext().newActor(new ContadorActor(10), "PERRO");
             tmpActor = universe.findActor("/CONTADOR0/OTRO");
             System.out.println("/CONTADOR0/OTRO/"+tmpActor.getContext().findActor("OTRO").getName());
             System.out.println("/CONTADOR0/OTRO/"+tmpActor.getContext().findActor("PERRO").getName());

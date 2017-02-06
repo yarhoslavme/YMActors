@@ -14,9 +14,6 @@ public final class UniverseActor extends BaseActor {
     public static final String SYSTEMACTOR = "SYSTEM";
     private final Logger logger = LoggerFactory.getLogger(UniverseActor.class);
 
-    public UniverseActor() {
-    }
-
     @Override
     public void process(Object pMsg, ActorRef pSender) throws Exception {
     }

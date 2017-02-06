@@ -42,16 +42,16 @@ public final class BaseContext implements IActorContext {
     }
 
     @Override
-    public ActorRef newActor(Class pActorType, String pName) {
+    public ActorRef newActor(BaseActor pActorType, String pName) {
         if (children.containsKey(pName)) {
             //TODO: Raise an exception when name is already used.
             return children.get(pName);
         }
-        BaseActor newChild = ActorsFactory.createActor(pActorType, pName);
+        BaseActor newChild = pActorType;
         BaseContext newContext = new BaseContext(newChild, owner, system);
         newChild.setContext(newContext);
+        newChild.setName(pName);
         newChild.start();
-
         children.put(pName, newChild);
         return newChild;
     }

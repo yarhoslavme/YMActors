@@ -15,7 +15,7 @@ public class ContadorActor extends BaseActor {
     Logger logger = LoggerFactory.getLogger(ContadorActor.class);
     private int contador;
     
-    public void setContador(int pContador) {
+    public ContadorActor(int pContador) {
         contador = pContador;
     }
 
