@@ -5,3 +5,5 @@ Goals:
 
 1. Create pure Java Actors framework, easy to use.
 2. Inspired by AKKA (See AKKA.IO)
+
+In heavy development... New features every day!.  Stay tuned.
