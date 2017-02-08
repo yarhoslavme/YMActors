@@ -25,5 +25,7 @@ public interface IActorContext {
     public void requestQueue();
     
     public void dequeue();
+    
+    public int getDispatcher();
 
 }

@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import com.yarhoslav.ymactors.core.interfaces.ActorRef;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -15,11 +17,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class BaseContext implements IActorContext {
 
+    Logger logger = LoggerFactory.getLogger(BaseContext.class);
+
     private final BaseActor owner;
     private final ActorRef parent;
     private final Map<String, BaseActor> children;
     private final ActorSystem system;
     private final AtomicBoolean isQueued;
+    private final int dispatcher;
 
     public BaseContext(BaseActor pOwner, ActorRef pParent, ActorSystem pSystem) {
         owner = pOwner;
@@ -27,15 +32,17 @@ public final class BaseContext implements IActorContext {
         children = new ConcurrentHashMap<>();
         system = pSystem;
         isQueued = new AtomicBoolean(false);
+        dispatcher = pSystem.getDispatcher();
     }
 
     @Override
     public void requestQueue() {
-        if (isQueued.compareAndSet(false, true)) {
+        /*if (isQueued.compareAndSet(false, true)) {
             system.queueUp(owner);
-        }
+        }*/
+        system.queueUp(owner);
     }
-    
+
     @Override
     public void dequeue() {
         isQueued.set(false);
@@ -58,6 +65,7 @@ public final class BaseContext implements IActorContext {
 
     @Override
     public ActorRef findActor(String pName) {
+
         ActorRef tmpActor = children.get(pName);
         if (tmpActor == null) {
             //TODO: Should throws and Exception?
@@ -78,11 +86,18 @@ public final class BaseContext implements IActorContext {
 
     @Override
     public void forgetActor(ActorRef pActor) {
-        children.remove(pActor.getName());
+        logger.info("Papa: {} # de hijos {}", owner.getName(), children.size());
+        logger.info("Papa: {} esta removiendo al hijo {}", owner.getName(), children.remove(pActor.getName()).getName());
+        logger.info("Papa: {} # de hijos {}", owner.getName(), children.size());
     }
 
     @Override
     public Iterator getChildren() {
         return children.entrySet().iterator();
+    }
+
+    @Override
+    public int getDispatcher() {
+        return dispatcher;
     }
 }

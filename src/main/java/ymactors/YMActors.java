@@ -57,9 +57,9 @@ public class YMActors {
             status.start();
 
             for (int i = 0; i < 100; i++) {
-                ContadorActor ca = (ContadorActor) universe.newActor(new ContadorActor(1000000), "CONTADOR" + i);
+                ContadorActor ca = (ContadorActor) universe.newActor(new ContadorActor(3), "CONTADOR" + i);
             }
-
+/*
             ActorRef tmpActor = universe.findActor("/CONTADOR0");
             System.out.println("/CONTADOR0/"+tmpActor.getName());
             tmpActor.getContext().newActor(new ContadorActor(5), "OTRO");
@@ -70,7 +70,7 @@ public class YMActors {
             tmpActor.getContext().newActor(new ContadorActor(10), "PERRO");
             tmpActor = universe.findActor("/CONTADOR0/OTRO");
             System.out.println("/CONTADOR0/OTRO/"+tmpActor.getContext().findActor("OTRO").getName());
-            System.out.println("/CONTADOR0/OTRO/"+tmpActor.getContext().findActor("PERRO").getName());
+            System.out.println("/CONTADOR0/OTRO/"+tmpActor.getContext().findActor("PERRO").getName());*/
 
             //universe.findActor("/CONTADOR0").tell("contar", EmptyActor.getInstance());
             universe.tell(new BroadCastMsg("contar", EmptyActor.getInstance()), EmptyActor.getInstance());
@@ -87,5 +87,12 @@ public class YMActors {
             universe.ShutDownNow();
             status.interrupt();
         }
+        
+        BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
+            try {
+                buf.readLine();
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
     }
 }

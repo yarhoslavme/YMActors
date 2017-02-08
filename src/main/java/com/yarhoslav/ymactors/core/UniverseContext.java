@@ -78,4 +78,9 @@ public final class UniverseContext implements IActorContext {
     public void dequeue() {
         context.dequeue();
     }
+
+    @Override
+    public int getDispatcher() {
+        return context.getDispatcher();
+    }
 }

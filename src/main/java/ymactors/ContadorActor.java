@@ -22,10 +22,12 @@ public class ContadorActor extends BaseActor {
     @Override
     public void process(Object msj, ActorRef pSender) {
         if (msj.equals("contar")) {
+            logger.info("Actor {} procesa {}...", getName(), msj);
             contador--;
             //logger.info("Nombre {} cuenta {}.", getName(), contador);
             if (contador <= 0) {
                 self().tell(PoisonPill.getInstance(), self());
+                //self().kill();
             } else {
                 self().tell("contar", self());
             }

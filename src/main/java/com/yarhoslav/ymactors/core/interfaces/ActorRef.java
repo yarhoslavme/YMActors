@@ -11,4 +11,6 @@ public interface ActorRef extends Runnable {
     public String getName();
 
     public IActorContext getContext();
+    
+    public int getDispatcher();
 }

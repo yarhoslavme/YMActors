@@ -8,8 +8,7 @@ import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
 import com.yarhoslav.ymactors.core.messages.DeathMsg;
 import com.yarhoslav.ymactors.core.messages.ErrorMsg;
 import com.yarhoslav.ymactors.core.messages.PoisonPill;
-import java.util.Iterator;
-import java.util.Map;
+import com.yarhoslav.ymactors.core.services.BroadcastService;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,21 +54,33 @@ public abstract class BaseActor implements ActorRef {
         return this;
     }
 
+    //TODO: Check functionality
+    public void kill() {
+        isAlive.set(false);
+        mailBox.clear();
+        stop();
+    }
+
     public void stop() {
         //TODO: Broadcast PoisonPill to all children.
         //TODO: Implement stopping mechanism 
         //TODO: Remove this line
         //logger.info("{} Stop request received:", name);
+        logger.info("Actor {} inicia STOP ...", getName());
+
+        isAlive.set(false);
+
         try {
             beforeStop();
             broadcast(new BroadCastMsg(PoisonPill.getInstance(), this));
         } catch (Exception ex) {
             informException(new ErrorMsg(ex, this));
         } finally {
-            isAlive.set(false);
+            mailBox.clear();
             //TODO: Incompatible with UniverseActor.
             //TODO: Borrar esta locura!!!
             if (!(context.getParent() instanceof EmptyActor)) {
+                logger.info("Actor {} INFORMA DeathMsg ...", getName());
                 context.getParent().tell(DeathMsg.getInstance(), this);
             }
 
@@ -77,12 +88,7 @@ public abstract class BaseActor implements ActorRef {
     }
 
     private void broadcast(BroadCastMsg pMsg) {
-        Iterator entries = context.getChildren();
-        while (entries.hasNext()) {
-            Map.Entry entry = (Map.Entry) entries.next();
-            ActorRef child = (ActorRef) entry.getValue();
-            child.tell(pMsg, this);
-        }
+        BroadcastService broadcast = new BroadcastService(context.getChildren()).send(pMsg, this);
     }
 
     public void informException(ErrorMsg pMsg) {
@@ -118,17 +124,22 @@ public abstract class BaseActor implements ActorRef {
 
     @Override
     public void tell(Object pData, ActorRef pSender) {
+        logger.info("Actor {} inicia tell ...", getName());
+
         if (!isAlive.get()) {
             return;
         }
         if (mailBox.offer(new BasicMsg(pData, pSender))) {
+            logger.info("Actor {} acepta tell ...", getName());
             context.requestQueue();
         }
     }
 
     @Override
     public void run() {
-        if (!isAlive.get()) {
+        logger.info("Actor {} inicia procesamiento de mensaje...", getName());
+
+        if (mailBox.isEmpty()) {
             return;
         }
         heartbeats++;
@@ -138,23 +149,31 @@ public abstract class BaseActor implements ActorRef {
             return;
         }
 
+        if (!isAlive.get()) {
+            return;
+        }
+
         if (msg instanceof IActorMsg) {
             IActorMsg receivedMsg = (IActorMsg) msg;
             Object receivedData = receivedMsg.takeData();
             ActorRef receivedSender = receivedMsg.sender();
 
             if (receivedData instanceof BroadCastMsg) {
+                logger.info("Actor {} procesando msg->BROADCAST", getName());
                 BroadCastMsg payLoad = (BroadCastMsg) receivedData;
                 broadcast(payLoad);
                 receivedData = payLoad.takeData();
                 receivedSender = payLoad.sender();
             }
             if (receivedData instanceof PoisonPill) {
+                logger.info("Actor {} procesando msg->POISONPILL", getName());
                 stop();
             } else if (receivedData instanceof ErrorMsg) {
+                logger.info("Actor {} procesando msg->ErrorMsg", getName());
                 ErrorMsg payLoad = (ErrorMsg) receivedData;
                 handleException(payLoad.takeData(), payLoad.sender());
             } else if (receivedData instanceof DeathMsg) {
+                logger.info("Actor {} procesando msg->DeathMsg", getName());
                 context.forgetActor(receivedSender);
             } else {
                 try {
@@ -166,9 +185,14 @@ public abstract class BaseActor implements ActorRef {
         } else {
             informException(new ErrorMsg(new IllegalArgumentException("Message is not IActorMsg type."), this));
         }
-        context.dequeue();
-        if (!mailBox.isEmpty()) {
-            context.requestQueue();
-        }
+//        context.dequeue();
+//        if (!mailBox.isEmpty()) {
+//            context.requestQueue();
+//        }
+    }
+
+    @Override
+    public int getDispatcher() {
+        return context.getDispatcher();
     }
 }

@@ -36,4 +36,9 @@ public final class EmptyActor implements ActorRef {
         throw new IllegalStateException("Empty actor can not receive messages.");
     }
 
+    @Override
+    public int getDispatcher() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }
