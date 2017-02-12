@@ -1,92 +1,63 @@
 package com.yarhoslav.ymactors.core;
 
 import com.yarhoslav.ymactors.core.actors.BaseActor;
-import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import com.yarhoslav.ymactors.core.interfaces.ActorRef;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.interfaces.ISystem;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  *
  * @author yarhoslavme
  */
 public final class BaseContext implements IActorContext {
+    //TODO: ENUM with states of the actor's context
 
     Logger logger = LoggerFactory.getLogger(BaseContext.class);
 
-    private final BaseActor owner;
-    private final ActorRef parent;
-    private final Map<String, BaseActor> children;
-    private final ActorSystem system;
-    private final AtomicBoolean isQueued;
-    private final int dispatcher;
+    private final IActorRef owner;
+    private final IActorRef parent;
+    private final ConcurrentMap<String, IActorRef> children;
+    private final ISystem system;
 
-    public BaseContext(BaseActor pOwner, ActorRef pParent, ActorSystem pSystem) {
+    public BaseContext(IActorRef pOwner, IActorRef pParent, ISystem pSystem) {
         owner = pOwner;
         parent = pParent;
         children = new ConcurrentHashMap<>();
         system = pSystem;
-        isQueued = new AtomicBoolean(false);
-        dispatcher = pSystem.getDispatcher();
     }
 
     @Override
-    public void requestQueue() {
-        /*if (isQueued.compareAndSet(false, true)) {
-            system.queueUp(owner);
-        }*/
-        system.queueUp(owner);
-    }
-
-    @Override
-    public void dequeue() {
-        isQueued.set(false);
-    }
-
-    @Override
-    public ActorRef newActor(BaseActor pActorType, String pName) {
+    public IActorRef newChild(IActorRef pActorType, String pName) throws IllegalArgumentException, IllegalStateException {
         if (children.containsKey(pName)) {
-            //TODO: Raise an exception when name is already used.
-            return children.get(pName);
+            throw new IllegalArgumentException(String.format("Actor's name already used in system %s", system.getName()));
+        } else {
+            BaseActor newChild = (BaseActor) pActorType;
+            BaseContext newContext = new BaseContext(newChild, owner, system);
+            newChild.setContext(newContext);
+            newChild.setName(pName);
+            newChild.start();
+            children.put(pName, newChild);
+            return newChild;
         }
-        BaseActor newChild = pActorType;
-        BaseContext newContext = new BaseContext(newChild, owner, system);
-        newChild.setContext(newContext);
-        newChild.setName(pName);
-        newChild.start();
-        children.put(pName, newChild);
-        return newChild;
     }
 
     @Override
-    public ActorRef findActor(String pName) {
+    public IActorRef findChild(String pName) throws IllegalArgumentException {
 
-        ActorRef tmpActor = children.get(pName);
+        IActorRef tmpActor = children.get(pName);
         if (tmpActor == null) {
-            //TODO: Should throws and Exception?
-            tmpActor = EmptyActor.getInstance();
+            throw new IllegalArgumentException(String.format("Actor named %s doesn't exists in system %s", pName, system.getName()));
         }
         return tmpActor;
     }
 
     @Override
-    public ActorSystem getSystem() {
-        return system;
-    }
-
-    @Override
-    public ActorRef getParent() {
-        return parent;
-    }
-
-    @Override
-    public void forgetActor(ActorRef pActor) {
-        logger.info("Papa: {} # de hijos {}", owner.getName(), children.size());
+    public void forgetChild(IActorRef pActor) {
         logger.info("Papa: {} esta removiendo al hijo {}", owner.getName(), children.remove(pActor.getName()).getName());
         logger.info("Papa: {} # de hijos {}", owner.getName(), children.size());
     }
@@ -97,7 +68,24 @@ public final class BaseContext implements IActorContext {
     }
 
     @Override
-    public int getDispatcher() {
-        return dispatcher;
+    public ISystem getSystem() {
+        return system;
     }
+
+    @Override
+    public IActorRef getParent() {
+        return parent;
+    }
+
+    @Override
+    public IActorRef getChild(String pName) {
+        //TODO: Should it throws an exception?
+        return children.get(pName);
+    }
+
+    @Override
+    public IActorRef getOwner() {
+        return owner;
+    }
+
 }

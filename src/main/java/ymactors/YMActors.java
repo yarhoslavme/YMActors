@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 import static java.lang.System.currentTimeMillis;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import com.yarhoslav.ymactors.core.interfaces.ActorRef;
 import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
 
 /**
@@ -56,11 +55,11 @@ public class YMActors {
             universe.start();
             status.start();
 
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 10; i++) {
                 ContadorActor ca = (ContadorActor) universe.newActor(new ContadorActor(3), "CONTADOR" + i);
             }
 /*
-            ActorRef tmpActor = universe.findActor("/CONTADOR0");
+            IActorRef tmpActor = universe.findActor("/CONTADOR0");
             System.out.println("/CONTADOR0/"+tmpActor.getName());
             tmpActor.getContext().newActor(new ContadorActor(5), "OTRO");
             System.out.println("/CONTADOR100/"+universe.findActor("/CONTADOR100").getName());

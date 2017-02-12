@@ -1,7 +1,7 @@
 package com.yarhoslav.ymactors.core.messages;
 
 import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
-import com.yarhoslav.ymactors.core.interfaces.ActorRef;
+import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 
 /**
  *
@@ -11,12 +11,12 @@ public final class BroadCastMsg implements IActorMsg {
 
     private final BasicMsg msg;
 
-    public BroadCastMsg(final Object pData, final ActorRef pSender) {
+    public BroadCastMsg(final Object pData, final IActorRef pSender) {
         msg = new BasicMsg(pData, pSender);
     }
 
     @Override
-    public ActorRef sender() {
+    public IActorRef sender() {
         return msg.sender();
     }
 

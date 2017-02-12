@@ -6,7 +6,7 @@ package com.yarhoslav.ymactors.core.interfaces;
  */
 public interface IActorMsg {
 
-    public ActorRef sender();
+    public IActorRef sender();
 
     public Object takeData();
 }

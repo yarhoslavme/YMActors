@@ -1,7 +1,5 @@
 package com.yarhoslav.ymactors.core.interfaces;
 
-import com.yarhoslav.ymactors.core.ActorSystem;
-import com.yarhoslav.ymactors.core.actors.BaseActor;
 import java.util.Iterator;
 
 /**
@@ -10,22 +8,22 @@ import java.util.Iterator;
  */
 public interface IActorContext {
 
-    public ActorRef newActor(BaseActor pActorType, String pName) throws IllegalArgumentException, IllegalStateException;
+    public IActorRef newChild(IActorRef pActor, String pName) throws IllegalArgumentException, IllegalStateException;
 
-    public ActorRef findActor(String pName);
+    public IActorRef findChild(String pName) throws IllegalArgumentException;
 
-    public void forgetActor(ActorRef pActor);
-    
+    public void forgetChild(IActorRef pActor);
+
+    public IActorRef getChild(String pName);
+
     public Iterator getChildren();
 
-    public ActorSystem getSystem();
+    public ISystem getSystem();
 
-    public ActorRef getParent();
-    
-    public void requestQueue();
-    
-    public void dequeue();
-    
-    public int getDispatcher();
+    public IActorRef getParent();
+
+    public IActorRef getOwner();
+
+
 
 }

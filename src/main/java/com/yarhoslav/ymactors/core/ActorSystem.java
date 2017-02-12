@@ -3,7 +3,6 @@ package com.yarhoslav.ymactors.core;
 import com.yarhoslav.ymactors.core.actors.BaseActor;
 import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.actors.UniverseActor;
-import com.yarhoslav.ymactors.core.interfaces.ActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import com.yarhoslav.ymactors.core.services.YMExecutorService;
 import static java.lang.System.currentTimeMillis;
@@ -13,12 +12,15 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.interfaces.ISystem;
+import com.yarhoslav.ymactors.core.interfaces.IWorker;
 
 /**
  *
  * @author yarhoslav
  */
-public class ActorSystem {
+public class ActorSystem implements ISystem {
 
     private final Logger logger = LoggerFactory.getLogger(ActorSystem.class);
 
@@ -30,6 +32,7 @@ public class ActorSystem {
     private final String name;
     private final long startTime = currentTimeMillis();
     private UniverseActor universeActor;
+    private IActorContext universeContext; 
 
     //TODO: Create own exception classes
     public ActorSystem(String pName) throws IllegalArgumentException {
@@ -41,30 +44,28 @@ public class ActorSystem {
 
     public void start() {
         universeActor = new UniverseActor();
-        UniverseContext newContext = new UniverseContext(universeActor, EmptyActor.getInstance(), this);
+        universeContext = new UniverseContext(universeActor, EmptyActor.getInstance(), this);
         universeActor.setName(UniverseActor.SYSTEMACTOR);
-        universeActor.setContext(newContext);
+        universeActor.setContext(universeContext);
         universeActor.start();
         isAlive.set(true);
     }
 
-    public IActorContext getContext() {
-        return universeActor.getContext();
+    public IActorRef findActor(String pName) {
+        return universeContext.findChild(pName);
     }
 
-    public ActorRef findActor(String pName) {
-        return universeActor.getContext().findActor(pName);
-    }
-
-    public void queueUp(ActorRef pActor) {
+    @Override
+    public void queueUp(IWorker pWorker) {
         if (isAlive.get()) {
             //living.execute(pActor);
-            living.offer(pActor);
+            living.offer(pWorker);
         } else {
-            logger.warn("System {} is inactive. Actor {} can not be enqueued.", new Object[]{name, pActor.getName()});
+            logger.warn("System {} is inactive. New worker cannot be enqueued.", name);
         }
     }
     
+    @Override
     public int getDispatcher() {
         return living.getDispacher();
     }
@@ -85,14 +86,14 @@ public class ActorSystem {
         }*/
     }
 
-    public ActorRef newActor(BaseActor pActorType, String pName) {
-        return universeActor.getContext().newActor(pActorType, pName);
+    public IActorRef newActor(BaseActor pActorType, String pName) {
+        return universeContext.newChild(pActorType, pName);
     }
 
     public synchronized String getEstadistica() {
         String tmp = "Start: " + startTime;
         int i = 0;
-        Iterator it = universeActor.getContext().getChildren();
+        Iterator it = universeContext.getChildren();
         while (it.hasNext()) {
             i++;
             it.next();
@@ -110,9 +111,14 @@ public class ActorSystem {
         return currentTimeMillis() - startTime;
     }
 
-    public void tell(Object pData, ActorRef pSender) {
+    public void tell(Object pData, IActorRef pSender) {
         logger.info("Universe actor recibe un mensaje de: {}", pSender.getName());
         universeActor.tell(pData, pSender);
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
 }
