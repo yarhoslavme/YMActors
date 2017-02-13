@@ -25,4 +25,9 @@ public final class EmptyActor implements IActorRef {
         throw new IllegalStateException("Empty actor can not receive messages.");
     }
 
+    @Override
+    public String getPath() {
+        return "/"+EMPTYNAME;
+    }
+
 }

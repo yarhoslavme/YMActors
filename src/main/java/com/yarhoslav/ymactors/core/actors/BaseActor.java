@@ -3,11 +3,6 @@ package com.yarhoslav.ymactors.core.actors;
 import com.yarhoslav.ymactors.core.BaseWorker;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import com.yarhoslav.ymactors.core.messages.BasicMsg;
-import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
-import com.yarhoslav.ymactors.core.messages.DeathMsg;
-import com.yarhoslav.ymactors.core.messages.ErrorMsg;
-import com.yarhoslav.ymactors.core.messages.PoisonPill;
-import com.yarhoslav.ymactors.core.services.BroadcastService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +19,7 @@ public abstract class BaseActor implements IActorRef {
     private IActorContext context;
     private IWorker worker;
     private String name;
+    private String path;
     private final AtomicBoolean isAlive = new AtomicBoolean(false);
 
     //TODO: Store the actor class in order to recreate it when restarted.
@@ -51,10 +47,6 @@ public abstract class BaseActor implements IActorRef {
         return this;
     }
 
-
-
-
-
     @Override
     public void tell(Object pData, IActorRef pSender) throws IllegalStateException {
         if (!isAlive.get()) {
@@ -80,4 +72,12 @@ public abstract class BaseActor implements IActorRef {
         name = pName;
     }
 
+    @Override
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String pPath) {
+        path = pPath;
+    }
 }

@@ -55,9 +55,12 @@ public class YMActors {
             universe.start();
             status.start();
 
+            ContadorActor ca = null;
             for (int i = 0; i < 10; i++) {
-                ContadorActor ca = (ContadorActor) universe.newActor(new ContadorActor(3), "CONTADOR" + i);
+                ca = (ContadorActor) universe.newActor(new ContadorActor(3), "CONTADOR" + i);
             }
+            
+            System.out.println(ca.getPath());
 /*
             IActorRef tmpActor = universe.findActor("/CONTADOR0");
             System.out.println("/CONTADOR0/"+tmpActor.getName());

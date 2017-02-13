@@ -30,7 +30,7 @@ public class ActorSystem implements ISystem {
     private final String name;
     private final long startTime = currentTimeMillis();
     private UniverseActor universeActor;
-    private IActorContext universeContext; 
+    private IActorContext universeContext;
 
     //TODO: Create own exception classes
     public ActorSystem(String pName) throws IllegalArgumentException {
@@ -44,6 +44,7 @@ public class ActorSystem implements ISystem {
         universeActor = new UniverseActor();
         universeContext = new UniverseContext(universeActor, EmptyActor.getInstance(), this);
         universeActor.setName(UniverseActor.SYSTEMACTOR);
+        universeActor.setPath("/" + UniverseActor.SYSTEMACTOR);
         universeActor.setContext(universeContext);
         universeActor.start();
         isAlive.set(true);
@@ -61,7 +62,7 @@ public class ActorSystem implements ISystem {
             logger.warn("System {} is inactive. New worker cannot be enqueued.", name);
         }
     }
-    
+
     @Override
     public int getDispatcher() {
         return living.getDispacher();

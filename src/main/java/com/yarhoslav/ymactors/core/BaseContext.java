@@ -33,6 +33,7 @@ public final class BaseContext implements IActorContext {
 
     @Override
     public IActorRef newChild(IActorRef pActorType, String pName) throws IllegalArgumentException, IllegalStateException {
+        String path = owner.getPath() + "/" + pName;
         if (children.containsKey(pName)) {
             throw new IllegalArgumentException(String.format("Actor's name already used in system %s", system.getName()));
         } else {
@@ -40,6 +41,7 @@ public final class BaseContext implements IActorContext {
             BaseContext newContext = new BaseContext(newChild, owner, system);
             newChild.setContext(newContext);
             newChild.setName(pName);
+            newChild.setPath(path);
             newChild.start();
             children.put(pName, newChild);
             return newChild;
