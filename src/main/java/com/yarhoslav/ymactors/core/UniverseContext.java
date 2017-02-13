@@ -3,7 +3,6 @@ package com.yarhoslav.ymactors.core;
 import com.yarhoslav.ymactors.core.actors.BaseActor;
 import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
-import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
 import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

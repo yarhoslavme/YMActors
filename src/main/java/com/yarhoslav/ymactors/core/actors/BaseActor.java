@@ -25,9 +25,8 @@ public abstract class BaseActor implements IActorRef {
     private IWorker worker;
     private String name;
     private final AtomicBoolean isAlive = new AtomicBoolean(false);
-    private long heartbeats;
-    //TODO: Store the actor class in order to recreate it when restarted.
 
+    //TODO: Store the actor class in order to recreate it when restarted.
     public abstract void process(Object pMsg, IActorRef pSender) throws Exception;
 
     public void preStart() throws Exception {
@@ -41,9 +40,8 @@ public abstract class BaseActor implements IActorRef {
 
     //TODO: Generate own exception classes
     public BaseActor start() throws IllegalStateException {
-        isAlive.set(true);
-        heartbeats = 0;
         worker = new BaseWorker(context);
+        isAlive.set(true);
         try {
             preStart();
         } catch (Exception ex) {
@@ -53,45 +51,9 @@ public abstract class BaseActor implements IActorRef {
         return this;
     }
 
-    //TODO: Check functionality
-    public void kill() {
-        isAlive.set(false);
-        stop();
-    }
 
-    public void stop() {
-        //TODO: Broadcast PoisonPill to all children.
-        //TODO: Implement stopping mechanism 
-        //TODO: Remove this line
-        //logger.info("{} Stop request received:", name);
-        logger.info("Actor {} inicia STOP ...", getName());
 
-        isAlive.set(false);
 
-        try {
-            beforeStop();
-            broadcast(new BroadCastMsg(PoisonPill.getInstance(), this));
-        } catch (Exception ex) {
-            informException(new ErrorMsg(ex, this));
-        } finally {
-            //TODO: Incompatible with UniverseActor.
-            //TODO: Borrar esta locura!!!
-            if (!(context.getParent() instanceof EmptyActor)) {
-                logger.info("Actor {} INFORMA DeathMsg ...", getName());
-                context.getParent().tell(DeathMsg.getInstance(), this);
-            }
-
-        }
-    }
-
-    private void broadcast(BroadCastMsg pMsg) {
-        BroadcastService broadcast = new BroadcastService(context.getChildren()).send(pMsg, this);
-    }
-
-    public void informException(ErrorMsg pMsg) {
-        logger.warn("Actor {} throws an exception: ", name, pMsg.takeData());
-        context.getParent().tell(pMsg, this);
-    }
 
     @Override
     public void tell(Object pData, IActorRef pSender) throws IllegalStateException {
@@ -108,10 +70,6 @@ public abstract class BaseActor implements IActorRef {
     @Override
     public String getName() {
         return name;
-    }
-
-    public long getHeartbeats() {
-        return heartbeats;
     }
 
     public void setContext(IActorContext pContext) {

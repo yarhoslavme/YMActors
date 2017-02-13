@@ -24,11 +24,9 @@ public class ActorSystem implements ISystem {
 
     private final Logger logger = LoggerFactory.getLogger(ActorSystem.class);
 
-    //TODO: Design a better executor service to avoid actors being executed in different threads.
-    //private final ExecutorService living = new ForkJoinPool();
-    private final YMExecutorService living = new YMExecutorService(8);
-    private final AtomicBoolean isAlive = new AtomicBoolean(false);
+    private final YMExecutorService living = new YMExecutorService(8); //TODO: Create APPConfig with external config file
     private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1); //TODO: Create APPConfig with external config file
+    private final AtomicBoolean isAlive = new AtomicBoolean(false);
     private final String name;
     private final long startTime = currentTimeMillis();
     private UniverseActor universeActor;
@@ -58,7 +56,6 @@ public class ActorSystem implements ISystem {
     @Override
     public void queueUp(IWorker pWorker) {
         if (isAlive.get()) {
-            //living.execute(pActor);
             living.offer(pWorker);
         } else {
             logger.warn("System {} is inactive. New worker cannot be enqueued.", name);
@@ -100,7 +97,7 @@ public class ActorSystem implements ISystem {
         }
 
         tmp = tmp + " Up:" + getUpTime();
-        tmp = tmp + " System Heartbeats:" + universeActor.getHeartbeats();
+        //tmp = tmp + " System Heartbeats:" + universeActor.getHeartbeats();
         tmp = tmp + " Mensajes:" + living.mensajes.get();
         tmp = tmp + " Actores:" + i + " Executor service:" + living.toString();
 
