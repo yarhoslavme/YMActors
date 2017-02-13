@@ -1,7 +1,8 @@
 package com.yarhoslav.ymactors.core.interfaces;
 
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
+import com.yarhoslav.ymactors.core.ActorSystem;
+import com.yarhoslav.ymactors.core.actors.BaseActor;
+import java.util.Iterator;
 
 /**
  *
@@ -9,22 +10,20 @@ import java.util.concurrent.ExecutorService;
  */
 public interface IActorContext {
 
-    public IActorRef createActor(String pName, IActorHandler pHandler) throws IllegalArgumentException, IllegalStateException;
+    public ActorRef newActor(BaseActor pActorType, String pName) throws IllegalArgumentException, IllegalStateException;
 
-    public IActorRef findActor(String pName);
+    public ActorRef findActor(String pName);
+
+    public void forgetActor(ActorRef pActor);
     
-    public IActorContext getContainer();
+    public Iterator getChildren();
+
+    public ActorSystem getSystem();
+
+    public ActorRef getParent();
     
-    public IActorRef getParent();
+    public void requestQueue();
     
-    public Map<String, IActorRef> getChildren();
-    
-    public boolean isAlive();
-    
-    public ExecutorService getExecutor();
-    
-    public void setMyself(IActorRef pMyself);
-    
-    public IActorRef getMyself();
+    public void dequeue();
 
 }

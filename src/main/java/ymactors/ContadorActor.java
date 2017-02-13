@@ -1,34 +1,35 @@
 package ymactors;
 
-import com.yarhoslav.ymactors.core.DefaultActorHandler;
+import com.yarhoslav.ymactors.core.actors.BaseActor;
 import com.yarhoslav.ymactors.core.messages.PoisonPill;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import static java.util.logging.Logger.getLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.yarhoslav.ymactors.core.interfaces.ActorRef;
 
 /**
  *
  * @author YarhoslavME
  */
-public class ContadorActor extends DefaultActorHandler {
-    
-    static final Logger LOGGER = getLogger(ContadorActor.class.getName());
+public class ContadorActor extends BaseActor {
+
+    Logger logger = LoggerFactory.getLogger(ContadorActor.class);
     private int contador;
     
-    public ContadorActor(int pInicial) {
-        contador = pInicial;
+    public ContadorActor(int pContador) {
+        contador = pContador;
     }
 
     @Override
-    public void process(Object msj) {
+    public void process(Object msj, ActorRef pSender) {
         if (msj.equals("contar")) {
             contador--;
+            //logger.info("Nombre {} cuenta {}.", getName(), contador);
             if (contador <= 0) {
-                  this.getMyself().tell(PoisonPill.getInstance());
+                self().tell(PoisonPill.getInstance(), self());
             } else {
-                this.getMyself().tell("contar", getMyself());
+                self().tell("contar", self());
             }
         }
     }
-    
+
 }

@@ -4,7 +4,7 @@
 
     <groupId>com.yarhoslav</groupId>
     <artifactId>YMActors</artifactId>
-    <version>0.4-SNAPSHOT</version>
+    <version>0.6-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>YMActors</name>
@@ -50,6 +50,12 @@
             <artifactId>junit</artifactId>
             <version>4.12</version>
             <scope>test</scope>
+        </dependency>
+        
+        <dependency> 
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.7.22</version>
         </dependency>
 
     </dependencies>

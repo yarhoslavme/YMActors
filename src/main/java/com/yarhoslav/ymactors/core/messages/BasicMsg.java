@@ -7,21 +7,23 @@ import com.yarhoslav.ymactors.core.interfaces.ActorRef;
  *
  * @author YarhoslavME
  */
-public final class BroadCastMsg implements IActorMsg {
-
-    private final BasicMsg msg;
-
-    public BroadCastMsg(final Object pData, final ActorRef pSender) {
-        msg = new BasicMsg(pData, pSender);
+public final class BasicMsg implements IActorMsg {
+    private final Object data;
+    private final ActorRef sender;
+    
+    public BasicMsg(Object pData, ActorRef pSender) {
+        data = pData;
+        sender = pSender;
     }
 
     @Override
     public ActorRef sender() {
-        return msg.sender();
+        return this.sender;
     }
 
     @Override
     public Object takeData() {
-        return msg.takeData();
+        return this.data;
     }
+    
 }
