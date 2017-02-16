@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 import static java.lang.System.currentTimeMillis;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
 
 /**
  *
@@ -45,7 +44,7 @@ public class YMActors {
 
         YMActors yma = new YMActors();
 
-        yma.test1();
+        yma.test2();
 
     }
 
@@ -54,13 +53,15 @@ public class YMActors {
         try {
             universe.start();
             status.start();
-
+            
             ContadorActor ca = null;
-            for (int i = 0; i < 10; i++) {
-                ca = (ContadorActor) universe.newActor(new ContadorActor(3), "CONTADOR" + i);
+            for (int i = 0; i < 100000; i++) {
+                ca = (ContadorActor) universe.addActor(new ContadorActor(10000), "CONTADOR" + i);
+                ca.start();
+                ca.tell("contar", EmptyActor.getInstance());
             }
             
-            System.out.println(ca.getPath());
+            System.out.println(ca.getName());
 /*
             IActorRef tmpActor = universe.findActor("/CONTADOR0");
             System.out.println("/CONTADOR0/"+tmpActor.getName());
@@ -75,7 +76,7 @@ public class YMActors {
             System.out.println("/CONTADOR0/OTRO/"+tmpActor.getContext().findActor("PERRO").getName());*/
 
             //universe.findActor("/CONTADOR0").tell("contar", EmptyActor.getInstance());
-            universe.tell(new BroadCastMsg("contar", EmptyActor.getInstance()), EmptyActor.getInstance());
+            //universe.tell(new BroadCastMsg("contar", EmptyActor.getInstance()), EmptyActor.getInstance());
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -97,4 +98,40 @@ public class YMActors {
                 System.out.println(ex.getMessage());
             }
     }
+    
+    void test2() {
+        //TODO: Compare performance with AKKA
+        try {
+            universe.start();
+            status.start();
+            
+            ContadorActor ping = (ContadorActor)universe.addActor(new ContadorActor(10000000), "PING");
+            ContadorActor pong = (ContadorActor)universe.addActor(new ContadorActor(10000000), "PONG");
+            
+            ping.start();
+            pong.start();
+            
+            ping.tell("contar", pong);
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        } finally {
+            BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
+            try {
+                buf.readLine();
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
+            universe.ShutDownNow();
+            status.interrupt();
+        }
+        
+        BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
+            try {
+                buf.readLine();
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
+    }
+    
 }

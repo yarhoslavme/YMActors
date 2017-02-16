@@ -9,6 +9,5 @@ public interface IActorRef {
     public void tell(Object pData, IActorRef pSender) throws IllegalStateException;
 
     public String getName();
-    
-    public String getPath();
+
 }

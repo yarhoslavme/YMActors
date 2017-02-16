@@ -19,7 +19,6 @@ public abstract class BaseActor implements IActorRef {
     private IActorContext context;
     private IWorker worker;
     private String name;
-    private String path;
     private final AtomicBoolean isAlive = new AtomicBoolean(false);
 
     //TODO: Store the actor class in order to recreate it when restarted.
@@ -32,6 +31,14 @@ public abstract class BaseActor implements IActorRef {
     }
 
     public void handleException(Object pData, IActorRef pSender) {
+    }
+
+    public void setContext(IActorContext pContext) {
+        context = pContext;
+    }
+
+    public void setName(String pName) {
+        name = pName;
     }
 
     //TODO: Generate own exception classes
@@ -55,29 +62,8 @@ public abstract class BaseActor implements IActorRef {
         worker.newMessage(new BasicMsg(pData, pSender));
     }
 
-    public BaseActor self() {
-        return this;
-    }
-
     @Override
     public String getName() {
         return name;
-    }
-
-    public void setContext(IActorContext pContext) {
-        context = pContext;
-    }
-
-    public void setName(String pName) {
-        name = pName;
-    }
-
-    @Override
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String pPath) {
-        path = pPath;
     }
 }

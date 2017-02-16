@@ -1,12 +1,10 @@
 package com.yarhoslav.ymactors.core;
 
 import com.yarhoslav.ymactors.core.actors.BaseActor;
-import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.actors.UniverseActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import com.yarhoslav.ymactors.core.services.YMExecutorService;
 import static java.lang.System.currentTimeMillis;
-import java.util.Iterator;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.ISystem;
 import com.yarhoslav.ymactors.core.interfaces.IWorker;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  *
@@ -23,14 +23,14 @@ import com.yarhoslav.ymactors.core.interfaces.IWorker;
 public class ActorSystem implements ISystem {
 
     private final Logger logger = LoggerFactory.getLogger(ActorSystem.class);
-
     private final YMExecutorService living = new YMExecutorService(8); //TODO: Create APPConfig with external config file
     private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1); //TODO: Create APPConfig with external config file
     private final AtomicBoolean isAlive = new AtomicBoolean(false);
     private final String name;
-    private final long startTime = currentTimeMillis();
     private UniverseActor universeActor;
     private IActorContext universeContext;
+    private final ConcurrentMap<String, IActorRef> actors = new ConcurrentHashMap<>();
+    private final long startTime = currentTimeMillis();
 
     //TODO: Create own exception classes
     public ActorSystem(String pName) throws IllegalArgumentException {
@@ -42,16 +42,34 @@ public class ActorSystem implements ISystem {
 
     public void start() {
         universeActor = new UniverseActor();
-        universeContext = new UniverseContext(universeActor, EmptyActor.getInstance(), this);
+        universeContext = new UniverseContext(universeActor, this);
         universeActor.setName(UniverseActor.SYSTEMACTOR);
-        universeActor.setPath("/" + UniverseActor.SYSTEMACTOR);
         universeActor.setContext(universeContext);
         universeActor.start();
         isAlive.set(true);
     }
 
-    public IActorRef findActor(String pName) {
-        return universeContext.findChild(pName);
+    @Override
+    public IActorRef findActor(String pName) throws IllegalArgumentException {
+        IActorRef actor = actors.get(pName);
+        if (actor == null) {
+            throw new IllegalArgumentException(String.format("Actor with name:%s not found in System %s.", pName, name));
+        }
+        return actor;
+    }
+
+    @Override
+    public <E extends BaseActor> IActorRef addActor(E pActorType, String pName) throws IllegalArgumentException {
+        if (actors.containsKey(pName)) {
+            throw new IllegalArgumentException(String.format("Name:%s already used in System %s", pName, name));
+        } else {
+            E newChild = pActorType;
+            BaseContext newContext = new BaseContext(newChild, this);
+            newChild.setContext(newContext);
+            newChild.setName(pName);
+            actors.put(pName, newChild);
+            return newChild;
+        }
     }
 
     @Override
@@ -84,23 +102,13 @@ public class ActorSystem implements ISystem {
         }*/
     }
 
-    public IActorRef newActor(BaseActor pActorType, String pName) {
-        return universeContext.newChild(pActorType, pName);
-    }
-
     public synchronized String getEstadistica() {
         String tmp = "Start: " + startTime;
-        int i = 0;
-        Iterator it = universeContext.getChildren();
-        while (it.hasNext()) {
-            i++;
-            it.next();
-        }
 
         tmp = tmp + " Up:" + getUpTime();
-        //tmp = tmp + " System Heartbeats:" + universeActor.getHeartbeats();
         tmp = tmp + " Mensajes:" + living.mensajes.get();
-        tmp = tmp + " Actores:" + i + " Executor service:" + living.toString();
+        tmp = tmp + " Actores:" + actors.size();
+        tmp = tmp + " Executor service:" + living.toString();
 
         return tmp;
     }
@@ -117,6 +125,14 @@ public class ActorSystem implements ISystem {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public void removeActor(IActorRef pActor) throws IllegalArgumentException {
+        IActorRef actor = actors.remove(pActor.getName());
+        if (actor == null) {
+            throw new IllegalArgumentException(String.format("Name:%s does not exists in System %s", pActor.getName(), name));
+        }
     }
 
 }

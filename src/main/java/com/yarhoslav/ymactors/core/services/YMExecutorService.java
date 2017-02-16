@@ -44,7 +44,6 @@ public class YMExecutorService {
     public int getDispacher() {
         //TODO: Take care of integer.MAX in index.
         int disp = index.getAndIncrement() % threads;
-        logger.info("Dispacher->{}", disp);
         return disp;
 
     }
@@ -56,5 +55,11 @@ public class YMExecutorService {
             salida = salida + " " + i + "->" + queues[i].size();
         }
         return salida;
+    }
+    
+    public void shutdown() {
+        for (int i = 0; i < threads; i++) {
+            pool[i].shutdown();
+        }
     }
 }
