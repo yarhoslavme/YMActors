@@ -105,8 +105,8 @@ public class YMActors {
             universe.start();
             status.start();
             
-            ContadorActor ping = (ContadorActor)universe.addActor(new ContadorActor(10000000), "PING");
-            ContadorActor pong = (ContadorActor)universe.addActor(new ContadorActor(10000000), "PONG");
+            ContadorActor ping = (ContadorActor)universe.addActor(new ContadorActor(100000), "PING");
+            ContadorActor pong = (ContadorActor)universe.addActor(new ContadorActor(100000), "PONG");
             
             ping.start();
             pong.start();
