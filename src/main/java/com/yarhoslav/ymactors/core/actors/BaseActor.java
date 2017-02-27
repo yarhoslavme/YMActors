@@ -2,12 +2,12 @@ package com.yarhoslav.ymactors.core.actors;
 
 import com.yarhoslav.ymactors.core.BaseWorker;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
-import com.yarhoslav.ymactors.core.messages.BasicMsg;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IWorker;
+import com.yarhoslav.ymactors.core.messages.BaseEnvelope;
 
 /**
  *
@@ -48,7 +48,7 @@ public abstract class BaseActor implements IActorRef {
         try {
             preStart();
         } catch (Exception ex) {
-            logger.warn("Actor {} throws an exception in preStart method while created: {}", name, ex.getMessage());
+            logger.warn("Actor {} throws an exception in preStart method while starting: {}", name, ex.getMessage());
             throw new IllegalStateException("Error starting Actor.", ex);
         }
         return this;
@@ -59,7 +59,7 @@ public abstract class BaseActor implements IActorRef {
         if (!isAlive.get()) {
             return;
         }
-        worker.newMessage(new BasicMsg(pData, pSender));
+        worker.newMessage(new BaseEnvelope(pData, pSender));
     }
 
     @Override

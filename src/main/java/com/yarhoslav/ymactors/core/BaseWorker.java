@@ -4,9 +4,8 @@ import com.yarhoslav.ymactors.core.actors.BaseActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.interfaces.IEnvelope;
 import com.yarhoslav.ymactors.core.interfaces.IWorker;
-import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
-import com.yarhoslav.ymactors.core.messages.DeathMsg;
 import com.yarhoslav.ymactors.core.messages.ErrorMsg;
 import com.yarhoslav.ymactors.core.messages.PoisonPill;
 import java.util.Queue;
@@ -25,7 +24,7 @@ public class BaseWorker implements IWorker {
     //TODO: Worker keeps Actor's status
     private final IActorContext context;
     private final int dispatcher;
-    private final Queue<IActorMsg> mailBox = new ConcurrentLinkedQueue<>();
+    private final Queue<IEnvelope> mailBox = new ConcurrentLinkedQueue<>();
     private long heartbeats;
 
     public BaseWorker(IActorContext pContext) {
@@ -62,81 +61,46 @@ public class BaseWorker implements IWorker {
         }
         heartbeats++;
 
-        Object msg = mailBox.poll();
-        if (msg == null) {
+        IEnvelope envelope = mailBox.poll();
+        if (envelope == null) {
             return;
         }
-        
+
+        Object receivedData = envelope.message();
+        IActorRef receivedSender = envelope.sender();
+
         //TODO: Implement State Pattern
-
-        if (msg instanceof IActorMsg) {
-            IActorMsg receivedMsg = (IActorMsg) msg;
-            Object receivedData = receivedMsg.takeData();
-            IActorRef receivedSender = receivedMsg.sender();
-
-            if (receivedData instanceof BroadCastMsg) {
-                BroadCastMsg payLoad = (BroadCastMsg) receivedData;
-                //broadcast(payLoad);
-                receivedData = payLoad.takeData();
-                receivedSender = payLoad.sender();
-            }
-            if (receivedData instanceof PoisonPill) {
-                stop();
-            } else if (receivedData instanceof ErrorMsg) {
-                ErrorMsg payLoad = (ErrorMsg) receivedData;
-                ((BaseActor) context.getOwner()).handleException(payLoad.takeData(), payLoad.sender());
-            } else if (receivedData instanceof DeathMsg) {
-                context.getSystem().removeActor(receivedSender);
-            } else {
-                try {
-                    ((BaseActor) context.getOwner()).process(receivedData, receivedSender);
-                } catch (Exception ex) {
-                    informException(new ErrorMsg(ex, receivedSender));
-                }
-            }
+        if (receivedData instanceof PoisonPill) {
+            stop();
         } else {
-            informException(new ErrorMsg(new IllegalArgumentException("Message is not IActorMsg type."), context.getOwner()));
+            try {
+                ((BaseActor) context.getOwner()).process(receivedData, receivedSender);
+            } catch (Exception ex) {
+                informException(new ErrorMsg(ex, receivedSender));
+            }
         }
+
     }
 
     @Override
-    public IActorMsg getNextMsg() {
+    public IEnvelope getNextMsg() {
         return mailBox.poll();
     }
 
     @Override
-    public void newMessage(IActorMsg pMsg) {
+    public void newMessage(IEnvelope pMsg) {
         if (mailBox.offer(pMsg)) {
             requestQueue();
         }
     }
 
     public void stop() {
-        //TODO: Broadcast PoisonPill to all children.
-        //TODO: Implement stopping mechanism 
-        //TODO: Remove this line
-        //logger.info("{} Stop request received:", name);
-
         try {
             ((BaseActor) context.getOwner()).beforeStop();
-            //broadcast(new BroadCastMsg(PoisonPill.getInstance(), context.getOwner()));
         } catch (Exception ex) {
             informException(new ErrorMsg(ex, context.getOwner()));
         } finally {
-            //TODO: Incompatible with UniverseActor.
-            //TODO: Borrar esta locura!!!
-            //TODO: Implement observable-observer pattern
-/*            if (!(context.getParent() instanceof EmptyActor)) {
-                logger.info("Actor {} INFORMA DeathMsg ...", context.getOwner().getName());
-                context.getParent().tell(DeathMsg.getInstance(), context.getOwner());
-            }*/
             context.getSystem().removeActor(context.getOwner());
         }
     }
-
-    /*
-    private void broadcast(BroadCastMsg pMsg) {
-        BroadcastService broadcast = new BroadcastService(context.getSystem().getActors()).send(pMsg, context.getOwner());
-    }
-*/
 }

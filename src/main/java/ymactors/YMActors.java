@@ -2,6 +2,9 @@ package ymactors;
 
 import com.yarhoslav.ymactors.core.ActorSystem;
 import com.yarhoslav.ymactors.core.actors.EmptyActor;
+import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
+import com.yarhoslav.ymactors.core.messages.ErrorMsg;
+import com.yarhoslav.ymactors.core.messages.PoisonPill;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -44,7 +47,7 @@ public class YMActors {
 
         YMActors yma = new YMActors();
 
-        yma.test2();
+        yma.test3();
 
     }
 
@@ -97,6 +100,21 @@ public class YMActors {
             } catch (IOException ex) {
                 System.out.println(ex.getMessage());
             }
+    }
+
+    void test3() {
+        try {
+            IActorMsg poison = PoisonPill.getInstance();
+            System.out.println(poison.toString());
+            poison = new ErrorMsg(new IllegalAccessException(), null);
+            System.out.println(poison.toString());
+            poison = new ErrorMsg(new IllegalAccessException(), null);
+            System.out.println(poison.toString());
+            poison = PoisonPill.getInstance();
+            System.out.println(poison.toString());
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
     }
     
     void test2() {

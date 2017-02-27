@@ -9,4 +9,6 @@ public interface IActorMsg {
     public IActorRef sender();
 
     public Object takeData();
+    
+    public String id();
 }

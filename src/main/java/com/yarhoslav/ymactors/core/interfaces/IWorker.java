@@ -12,7 +12,7 @@ public interface IWorker extends Runnable {
 
     public int getDispatcher();
 
-    public IActorMsg getNextMsg();
+    public IEnvelope getNextMsg();
 
-    public void newMessage(IActorMsg pMsg);
+    public void newMessage(IEnvelope pMsg);
 }
