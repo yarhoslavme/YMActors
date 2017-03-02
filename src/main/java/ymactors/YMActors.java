@@ -57,7 +57,6 @@ public class YMActors {
             ContadorActor ca = null;
             for (int i = 0; i < 1000; i++) {
                 ca = (ContadorActor) universe.addActor(new ContadorActor(10), "CONTADOR" + i);
-                //ca.start();
                 ca.tell("contar", EmptyActor.getInstance());
             }
             

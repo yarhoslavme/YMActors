@@ -23,13 +23,9 @@ public class ContadorActor extends BaseActor {
     public void process(Object msj, IActorRef pSender) {
         if (msj.equals("contar")) {
             contador--;
-            //logger.info("Nombre {} cuenta {}.", getName(), contador);
             if (contador <= 0) {
-                //pSender.tell(PoisonPill.getInstance(), this);
                 tell(PoisonPill.getInstance(), this);
-                //self().kill();
             } else {
-                //pSender.tell("contar", this);
                 tell("contar", this);
             }
         }

@@ -17,18 +17,13 @@ public final class UniverseContext implements IActorContext {
 
     private final IActorContext context;
 
-    public UniverseContext(IActorRef pOwner, ISystem pSystem) {
-        context = new BaseContext(pOwner, pSystem);
+    public UniverseContext(ISystem pSystem) {
+        context = new BaseContext(pSystem);
     }
 
     @Override
     public ISystem getSystem() {
         return context.getSystem();
-    }
-
-    @Override
-    public IActorRef getOwner() {
-        return context.getOwner();
     }
 
     @Override

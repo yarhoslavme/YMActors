@@ -8,8 +8,6 @@ public interface IActorContext {
 
     public ISystem getSystem();
 
-    public IActorRef getOwner();
-    
     public void setState(IActorState pState);
     
     public IActorState getState();

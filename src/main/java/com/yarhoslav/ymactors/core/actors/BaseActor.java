@@ -11,6 +11,7 @@ import com.yarhoslav.ymactors.core.interfaces.ISystem;
 import com.yarhoslav.ymactors.core.interfaces.IWorker;
 import com.yarhoslav.ymactors.core.messages.BaseEnvelope;
 import com.yarhoslav.ymactors.core.states.RunningState;
+import com.yarhoslav.ymactors.core.states.StoppingState;
 
 /**
  *
@@ -28,7 +29,7 @@ public abstract class BaseActor implements IActorRef {
     //TODO: Store the actor class in order to recreate it when restarted.
     public abstract void process(Object pMsg, IActorRef pSender) throws Exception;
 
-    public void preStart() throws Exception {
+    public void postStart() throws Exception {
     }
 
     public void beforeStop() throws Exception {
@@ -47,10 +48,10 @@ public abstract class BaseActor implements IActorRef {
 
     //TODO: Generate own exception classes
     public void start() throws IllegalStateException {
-        context = new BaseContext(this, system);
+        context = new BaseContext(system);
         worker = new BaseWorker(context);
         try {
-            preStart();
+            postStart();
         } catch (Exception ex) {
             logger.warn("Actor {} throws an exception in preStart method while starting: {}", name, ex.getMessage());
             throw new IllegalStateException("Error starting Actor.", ex);
@@ -60,13 +61,16 @@ public abstract class BaseActor implements IActorRef {
     }
 
     public void stop() throws Exception {
+        isAlive.set(false);
+        worker.discardMessages();
         try {
             beforeStop();
         } catch (Exception ex) {
-            //TODO: Possibly set ERROR state at this point.  Check this.
             throw new IllegalStateException(String.format("Error stoping Actor %s", name));
         } finally {
-            system.removeActor(context.getOwner());
+            system.removeActor(this);
+            context.setState(new StoppingState());
+            //TODO: Cancel and remove ticket from YMExecutor
         }
     }
 

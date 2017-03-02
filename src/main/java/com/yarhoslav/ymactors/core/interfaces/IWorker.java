@@ -10,7 +10,7 @@ public interface IWorker extends Runnable {
 
     public int getDispatcher();
 
-    public IEnvelope getNextMsg();
-
     public void newMessage(IEnvelope pMsg);
+    
+    public void discardMessages();
 }

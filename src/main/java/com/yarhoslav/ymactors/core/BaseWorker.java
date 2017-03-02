@@ -1,6 +1,5 @@
 package com.yarhoslav.ymactors.core;
 
-import com.yarhoslav.ymactors.core.actors.BaseActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IEnvelope;
@@ -33,6 +32,7 @@ public class BaseWorker implements IWorker {
 
     @Override
     public void requestQueue() {
+        //TODO: Use ticket system to get only one spot in the queue
         context.getSystem().queueUp(this);
     }
 
@@ -42,7 +42,7 @@ public class BaseWorker implements IWorker {
     }
 
     public void informException(ErrorMsg pMsg) {
-        logger.warn("Actor {} throws an exception: ", context.getOwner().getName(), pMsg.takeData());
+        //logger.warn("Actor {} throws an exception: ", context.getOwner().getName(), pMsg.takeData());
         //TODO: Should be private method.
         //TODO: Must implement Observable-observer pattern
     }
@@ -66,12 +66,8 @@ public class BaseWorker implements IWorker {
             context.getState().execute(receivedData, receivedSender);
         } catch (Exception ex) {
             informException(new ErrorMsg(ex));
+            //TODO: Change to Error State
         }
-    }
-
-    @Override
-    public IEnvelope getNextMsg() {
-        return mailBox.poll();
     }
 
     @Override
@@ -79,6 +75,11 @@ public class BaseWorker implements IWorker {
         if (mailBox.offer(pMsg)) {
             requestQueue();
         }
+    }
+
+    @Override
+    public void discardMessages() {
+        mailBox.clear();
     }
 
 }
