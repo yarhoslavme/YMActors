@@ -2,6 +2,7 @@ package com.yarhoslav.ymactors.core.states;
 
 import com.yarhoslav.ymactors.core.interfaces.IAction;
 import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
+import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorState;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,14 +21,17 @@ public abstract class BaseState implements IActorState {
     }
 
     @Override
-    public void execute(IActorMsg pMsg) throws Exception {
-        IAction action = behaviors.get(pMsg.id());
-        if (action != null) {
-            action.doIt(pMsg);
+    public void execute(Object pMsg, IActorRef pSender) throws Exception {
+        if (pMsg instanceof IActorMsg) {
+            IActorMsg msg = (IActorMsg) pMsg;
+            IAction action = behaviors.get(msg.id());
+            if (action != null) {
+                action.doIt(msg, pSender);
+            }
         } else {
-            unknownMsg(pMsg);
+            unknownMsg(pMsg, pSender);
         }
     }
     
-    public abstract void unknownMsg(IActorMsg pMsg) throws Exception;
+    public abstract void unknownMsg(Object pMsg, IActorRef pSender) throws Exception;
 }

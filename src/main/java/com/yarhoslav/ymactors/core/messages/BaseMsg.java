@@ -1,29 +1,29 @@
 package com.yarhoslav.ymactors.core.messages;
 
 import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 
 /**
  *
  * @author YarhoslavME
  */
-public abstract class BaseMsg implements IActorMsg {
-    private final Object data;
-    private final IActorRef sender;
-    
-    public BaseMsg(Object pData, IActorRef pSender) {
-        data = pData;
-        sender = pSender;
-    }
+public final class BaseMsg implements IActorMsg {
 
-    @Override
-    public IActorRef sender() {
-        return this.sender;
+    private final Object data;
+    private final String id;
+
+    public BaseMsg(Object pData, String pId) {
+        data = pData;
+        id = pId;
     }
 
     @Override
     public Object takeData() {
         return this.data;
+    }
+
+    @Override
+    public String id() {
+        return id;
     }
 
 }

@@ -1,13 +1,16 @@
 package com.yarhoslav.ymactors.core.actors;
 
+import com.yarhoslav.ymactors.core.BaseContext;
 import com.yarhoslav.ymactors.core.BaseWorker;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.interfaces.ISystem;
 import com.yarhoslav.ymactors.core.interfaces.IWorker;
 import com.yarhoslav.ymactors.core.messages.BaseEnvelope;
+import com.yarhoslav.ymactors.core.states.RunningState;
 
 /**
  *
@@ -18,6 +21,7 @@ public abstract class BaseActor implements IActorRef {
     private final Logger logger = LoggerFactory.getLogger(BaseActor.class);
     private IActorContext context;
     private IWorker worker;
+    private ISystem system;
     private String name;
     private final AtomicBoolean isAlive = new AtomicBoolean(false);
 
@@ -33,8 +37,8 @@ public abstract class BaseActor implements IActorRef {
     public void handleException(Object pData, IActorRef pSender) {
     }
 
-    public void setContext(IActorContext pContext) {
-        context = pContext;
+    public void setSystem(ISystem pSystem) {
+        system = pSystem;
     }
 
     public void setName(String pName) {
@@ -42,16 +46,28 @@ public abstract class BaseActor implements IActorRef {
     }
 
     //TODO: Generate own exception classes
-    public BaseActor start() throws IllegalStateException {
+    public void start() throws IllegalStateException {
+        context = new BaseContext(this, system);
         worker = new BaseWorker(context);
-        isAlive.set(true);
         try {
             preStart();
         } catch (Exception ex) {
             logger.warn("Actor {} throws an exception in preStart method while starting: {}", name, ex.getMessage());
             throw new IllegalStateException("Error starting Actor.", ex);
         }
-        return this;
+        context.setState(new RunningState(this));
+        isAlive.set(true);
+    }
+
+    public void stop() throws Exception {
+        try {
+            beforeStop();
+        } catch (Exception ex) {
+            //TODO: Possibly set ERROR state at this point.  Check this.
+            throw new IllegalStateException(String.format("Error stoping Actor %s", name));
+        } finally {
+            system.removeActor(context.getOwner());
+        }
     }
 
     @Override

@@ -2,12 +2,10 @@ package com.yarhoslav.ymactors.core;
 
 import com.yarhoslav.ymactors.core.actors.BaseActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
-import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IEnvelope;
 import com.yarhoslav.ymactors.core.interfaces.IWorker;
 import com.yarhoslav.ymactors.core.messages.ErrorMsg;
-import com.yarhoslav.ymactors.core.messages.PoisonPill;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
@@ -31,11 +29,6 @@ public class BaseWorker implements IWorker {
         context = pContext;
         dispatcher = context.getSystem().getDispatcher();
         heartbeats = 0;
-    }
-
-    @Override
-    public void process(IActorMsg pMsg, IActorRef pSender) {
-        //TODO: Process all internal (system) messages.
     }
 
     @Override
@@ -69,17 +62,11 @@ public class BaseWorker implements IWorker {
         Object receivedData = envelope.message();
         IActorRef receivedSender = envelope.sender();
 
-        //TODO: Implement State Pattern
-        if (receivedData instanceof PoisonPill) {
-            stop();
-        } else {
-            try {
-                ((BaseActor) context.getOwner()).process(receivedData, receivedSender);
-            } catch (Exception ex) {
-                informException(new ErrorMsg(ex, receivedSender));
-            }
+        try {
+            context.getState().execute(receivedData, receivedSender);
+        } catch (Exception ex) {
+            informException(new ErrorMsg(ex));
         }
-
     }
 
     @Override
@@ -94,13 +81,4 @@ public class BaseWorker implements IWorker {
         }
     }
 
-    public void stop() {
-        try {
-            ((BaseActor) context.getOwner()).beforeStop();
-        } catch (Exception ex) {
-            informException(new ErrorMsg(ex, context.getOwner()));
-        } finally {
-            context.getSystem().removeActor(context.getOwner());
-        }
-    }
 }

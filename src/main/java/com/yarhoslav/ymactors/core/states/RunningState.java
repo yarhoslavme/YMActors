@@ -1,7 +1,9 @@
 package com.yarhoslav.ymactors.core.states;
 
+import com.yarhoslav.ymactors.core.actions.ActionStopActor;
 import com.yarhoslav.ymactors.core.actors.BaseActor;
-import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
+import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.messages.PoisonPill;
 
 /**
  *
@@ -11,13 +13,15 @@ public final class RunningState extends BaseState {
 
     private final BaseActor owner;
 
-    @Override
-    public void unknownMsg(IActorMsg pMsg) throws Exception {
-        owner.process(pMsg.takeData(), pMsg.sender());
-    }
-
     public RunningState(BaseActor pOwner) {
         this.owner = pOwner;
+        
+        addBehavior(PoisonPill.getInstance(), new ActionStopActor(owner));
+    }
+
+    @Override
+    public void unknownMsg(Object pMsg, IActorRef pSender) throws Exception {
+        owner.process(pMsg, pSender);
     }
 
 }

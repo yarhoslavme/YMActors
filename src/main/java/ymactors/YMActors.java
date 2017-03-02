@@ -2,9 +2,6 @@ package ymactors;
 
 import com.yarhoslav.ymactors.core.ActorSystem;
 import com.yarhoslav.ymactors.core.actors.EmptyActor;
-import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
-import com.yarhoslav.ymactors.core.messages.ErrorMsg;
-import com.yarhoslav.ymactors.core.messages.PoisonPill;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -47,7 +44,7 @@ public class YMActors {
 
         YMActors yma = new YMActors();
 
-        yma.test3();
+        yma.test1();
 
     }
 
@@ -58,13 +55,13 @@ public class YMActors {
             status.start();
             
             ContadorActor ca = null;
-            for (int i = 0; i < 100000; i++) {
-                ca = (ContadorActor) universe.addActor(new ContadorActor(10000), "CONTADOR" + i);
-                ca.start();
+            for (int i = 0; i < 1000; i++) {
+                ca = (ContadorActor) universe.addActor(new ContadorActor(10), "CONTADOR" + i);
+                //ca.start();
                 ca.tell("contar", EmptyActor.getInstance());
             }
             
-            System.out.println(ca.getName());
+            System.out.println("Ultimo actor: " + ca.getName());
 /*
             IActorRef tmpActor = universe.findActor("/CONTADOR0");
             System.out.println("/CONTADOR0/"+tmpActor.getName());
@@ -82,7 +79,8 @@ public class YMActors {
             //universe.tell(new BroadCastMsg("contar", EmptyActor.getInstance()), EmptyActor.getInstance());
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
+            System.out.println("Error: " + e);
         } finally {
             BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
             try {
@@ -103,18 +101,18 @@ public class YMActors {
     }
 
     void test3() {
-        try {
-            IActorMsg poison = PoisonPill.getInstance();
-            System.out.println(poison.toString());
-            poison = new ErrorMsg(new IllegalAccessException(), null);
-            System.out.println(poison.toString());
-            poison = new ErrorMsg(new IllegalAccessException(), null);
-            System.out.println(poison.toString());
-            poison = PoisonPill.getInstance();
-            System.out.println(poison.toString());
+        /*        try {
+        IActorMsg poison = PoisonPill.getInstance();
+        System.out.println(poison.toString());
+        poison = new ErrorMsg(new IllegalAccessException(), null);
+        System.out.println(poison.toString());
+        poison = new ErrorMsg(new IllegalAccessException(), null);
+        System.out.println(poison.toString());
+        poison = PoisonPill.getInstance();
+        System.out.println(poison.toString());
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-        }
+        System.out.println(ex.getMessage());
+        }*/
     }
     
     void test2() {

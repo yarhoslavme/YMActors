@@ -6,5 +6,5 @@ package com.yarhoslav.ymactors.core.interfaces;
  */
 public interface IAction {
 
-    public void doIt(IActorMsg pMsg) throws Exception;
+    public void doIt(IActorMsg pMsg, IActorRef pSender) throws Exception;
 }

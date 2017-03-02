@@ -1,7 +1,6 @@
 package com.yarhoslav.ymactors.core.messages;
 
 import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 
 /**
  *
@@ -17,13 +16,8 @@ public final class PoisonPill implements IActorMsg {
     }  
 
     @Override
-    public IActorRef sender() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public Object takeData() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return SINGLETON;
     }
 
     @Override

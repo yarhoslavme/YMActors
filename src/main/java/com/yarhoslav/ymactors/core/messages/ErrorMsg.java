@@ -1,21 +1,27 @@
 package com.yarhoslav.ymactors.core.messages;
 
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
 
 /**
  *
  * @author YarhoslavME
  */
-public final class ErrorMsg extends BaseMsg {
-    
+public final class ErrorMsg implements IActorMsg {
+
     private final String ID = "ERRORMSG";
-    
-    public ErrorMsg(Exception pData, IActorRef pSender) {
-        super(pData, pSender);
-    }   
+    private final IActorMsg msg;
+
+    public ErrorMsg(Exception pData) {
+        msg = new BaseMsg(pData, ID);
+    }
 
     @Override
     public String id() {
-        return ID;
+        return msg.id();
+    }
+
+    @Override
+    public Object takeData() {
+        return msg.takeData();
     }
 }

@@ -6,9 +6,7 @@ package com.yarhoslav.ymactors.core.interfaces;
  */
 public interface IActorMsg {
 
-    public IActorRef sender();
-
     public Object takeData();
-    
+
     public String id();
 }

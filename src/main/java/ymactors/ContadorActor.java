@@ -25,10 +25,12 @@ public class ContadorActor extends BaseActor {
             contador--;
             //logger.info("Nombre {} cuenta {}.", getName(), contador);
             if (contador <= 0) {
-                pSender.tell(PoisonPill.getInstance(), this);
+                //pSender.tell(PoisonPill.getInstance(), this);
+                tell(PoisonPill.getInstance(), this);
                 //self().kill();
             } else {
-                pSender.tell("contar", this);
+                //pSender.tell("contar", this);
+                tell("contar", this);
             }
         }
     }

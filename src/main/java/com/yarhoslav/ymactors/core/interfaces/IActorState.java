@@ -6,7 +6,7 @@ package com.yarhoslav.ymactors.core.interfaces;
  */
 public interface IActorState {
 
-    public void execute(IActorMsg pMsg) throws Exception;
+    public void execute(Object pMsg, IActorRef pSender) throws Exception;
 
     public void addBehavior(IActorMsg pMsg, IAction pAction);
 }

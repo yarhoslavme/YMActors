@@ -4,6 +4,7 @@ import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.interfaces.IActorState;
 import com.yarhoslav.ymactors.core.interfaces.ISystem;
 
 /**
@@ -16,6 +17,7 @@ public final class BaseContext implements IActorContext {
     Logger logger = LoggerFactory.getLogger(BaseContext.class);
     private final IActorRef owner;
     private final ISystem system;
+    private IActorState state;
 
     public BaseContext(IActorRef pOwner, ISystem pSystem) {
         owner = pOwner;
@@ -30,6 +32,17 @@ public final class BaseContext implements IActorContext {
     @Override
     public IActorRef getOwner() {
         return owner;
+    }
+
+    @Override
+    public void setState(IActorState pState) {
+        //TODO: Trigger event notification
+        state = pState;
+    }
+
+    @Override
+    public IActorState getState() {
+        return state;
     }
 
 }

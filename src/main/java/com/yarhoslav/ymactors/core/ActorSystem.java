@@ -42,9 +42,8 @@ public class ActorSystem implements ISystem {
 
     public void start() {
         universeActor = new UniverseActor();
-        universeContext = new UniverseContext(universeActor, this);
         universeActor.setName(UniverseActor.SYSTEMACTOR);
-        universeActor.setContext(universeContext);
+        universeActor.setSystem(this);
         universeActor.start();
         isAlive.set(true);
     }
@@ -64,9 +63,9 @@ public class ActorSystem implements ISystem {
             throw new IllegalArgumentException(String.format("Name:%s already used in System %s", pName, name));
         } else {
             E newChild = pActorType;
-            BaseContext newContext = new BaseContext(newChild, this);
-            newChild.setContext(newContext);
             newChild.setName(pName);
+            newChild.setSystem(this);
+            newChild.start();
             actors.put(pName, newChild);
             return newChild;
         }
