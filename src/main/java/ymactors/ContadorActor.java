@@ -4,7 +4,7 @@ import com.yarhoslav.ymactors.core.actors.BaseActor;
 import com.yarhoslav.ymactors.core.messages.PoisonPill;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.yarhoslav.ymactors.core.interfaces.ActorRef;
+import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 
 /**
  *
@@ -20,14 +20,13 @@ public class ContadorActor extends BaseActor {
     }
 
     @Override
-    public void process(Object msj, ActorRef pSender) {
+    public void process(Object msj, IActorRef pSender) {
         if (msj.equals("contar")) {
             contador--;
-            //logger.info("Nombre {} cuenta {}.", getName(), contador);
             if (contador <= 0) {
-                self().tell(PoisonPill.getInstance(), self());
+                tell(PoisonPill.getInstance(), this);
             } else {
-                self().tell("contar", self());
+                tell("contar", this);
             }
         }
     }

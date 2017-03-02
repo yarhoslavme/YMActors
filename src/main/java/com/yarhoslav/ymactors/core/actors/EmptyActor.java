@@ -1,13 +1,12 @@
 package com.yarhoslav.ymactors.core.actors;
 
-import com.yarhoslav.ymactors.core.interfaces.IActorContext;
-import com.yarhoslav.ymactors.core.interfaces.ActorRef;
+import com.yarhoslav.ymactors.core.interfaces.IActorRef;
 
 /**
  *
  * @author yarhoslavme
  */
-public final class EmptyActor implements ActorRef {
+public final class EmptyActor implements IActorRef {
 
     private static final String EMPTYNAME = "EMPTYACTOR";
     private static final EmptyActor SINGLETON = new EmptyActor();
@@ -22,17 +21,7 @@ public final class EmptyActor implements ActorRef {
     }
 
     @Override
-    public IActorContext getContext() {
-        throw new IllegalStateException("Empty actor has not context.");
-    }
-
-    @Override
-    public void run() {
-        throw new IllegalStateException("Empty actor can not be enqueued.");
-    }
-
-    @Override
-    public void tell(Object pData, ActorRef pSender) {
+    public void tell(Object pData, IActorRef pSender) {
         throw new IllegalStateException("Empty actor can not receive messages.");
     }
 

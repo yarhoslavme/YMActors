@@ -1,12 +1,11 @@
 package com.yarhoslav.ymactors.core;
 
-import com.yarhoslav.ymactors.core.actors.BaseActor;
-import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
-import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.yarhoslav.ymactors.core.interfaces.ActorRef;
+import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.interfaces.IActorState;
+import com.yarhoslav.ymactors.core.interfaces.ISystem;
 
 /**
  *
@@ -18,64 +17,23 @@ public final class UniverseContext implements IActorContext {
 
     private final IActorContext context;
 
-    public UniverseContext(BaseActor pOwner, ActorRef pParent, ActorSystem pSystem) {
-        context = new BaseContext(pOwner, EmptyActor.getInstance(), pSystem);
+    public UniverseContext(ISystem pSystem) {
+        context = new BaseContext(pSystem);
     }
 
     @Override
-    public ActorRef newActor(BaseActor pActorType, String pName) throws IllegalArgumentException, IllegalStateException {
-        return context.newActor(pActorType, pName);
-    }
-
-    @Override
-    public ActorRef findActor(String pName) {
-        if (!pName.startsWith("/")) {
-            return context.findActor(pName);
-        } else {
-            pName = pName.substring(1);
-            String names[] = pName.split("/");
-            ActorRef tmpParent = context.findActor(names[0]);
-            if (tmpParent == null) {
-                return EmptyActor.getInstance();
-            }
-            for (int i = 1; i < names.length; i++) {
-                ActorRef tmpChild = tmpParent.getContext().findActor(names[i]);
-                if (tmpChild == null) {
-                    return EmptyActor.getInstance();
-                }
-                tmpParent = tmpChild;
-            }
-            return tmpParent;
-        }
-    }
-
-    @Override
-    public void forgetActor(ActorRef pActor) {
-        context.forgetActor(pActor);
-    }
-
-    @Override
-    public Iterator getChildren() {
-        return context.getChildren();
-    }
-
-    @Override
-    public ActorSystem getSystem() {
+    public ISystem getSystem() {
         return context.getSystem();
     }
 
     @Override
-    public ActorRef getParent() {
-        return context.getParent();
+    public void setState(IActorState pState) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void requestQueue() {
-        context.requestQueue();
+    public IActorState getState() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public void dequeue() {
-        context.dequeue();
-    }
 }

@@ -8,8 +8,6 @@ import java.io.InputStreamReader;
 import static java.lang.System.currentTimeMillis;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import com.yarhoslav.ymactors.core.interfaces.ActorRef;
-import com.yarhoslav.ymactors.core.messages.BroadCastMsg;
 
 /**
  *
@@ -55,12 +53,16 @@ public class YMActors {
         try {
             universe.start();
             status.start();
-
-            for (int i = 0; i < 100; i++) {
-                ContadorActor ca = (ContadorActor) universe.newActor(new ContadorActor(1000000), "CONTADOR" + i);
+            
+            ContadorActor ca = null;
+            for (int i = 0; i < 1000; i++) {
+                ca = (ContadorActor) universe.addActor(new ContadorActor(10), "CONTADOR" + i);
+                ca.tell("contar", EmptyActor.getInstance());
             }
-
-            ActorRef tmpActor = universe.findActor("/CONTADOR0");
+            
+            System.out.println("Ultimo actor: " + ca.getName());
+/*
+            IActorRef tmpActor = universe.findActor("/CONTADOR0");
             System.out.println("/CONTADOR0/"+tmpActor.getName());
             tmpActor.getContext().newActor(new ContadorActor(5), "OTRO");
             System.out.println("/CONTADOR100/"+universe.findActor("/CONTADOR100").getName());
@@ -70,10 +72,61 @@ public class YMActors {
             tmpActor.getContext().newActor(new ContadorActor(10), "PERRO");
             tmpActor = universe.findActor("/CONTADOR0/OTRO");
             System.out.println("/CONTADOR0/OTRO/"+tmpActor.getContext().findActor("OTRO").getName());
-            System.out.println("/CONTADOR0/OTRO/"+tmpActor.getContext().findActor("PERRO").getName());
+            System.out.println("/CONTADOR0/OTRO/"+tmpActor.getContext().findActor("PERRO").getName());*/
 
             //universe.findActor("/CONTADOR0").tell("contar", EmptyActor.getInstance());
-            universe.tell(new BroadCastMsg("contar", EmptyActor.getInstance()), EmptyActor.getInstance());
+            //universe.tell(new BroadCastMsg("contar", EmptyActor.getInstance()), EmptyActor.getInstance());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error: " + e);
+        } finally {
+            BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
+            try {
+                buf.readLine();
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
+            universe.ShutDownNow();
+            status.interrupt();
+        }
+        
+        BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
+            try {
+                buf.readLine();
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
+    }
+
+    void test3() {
+        /*        try {
+        IActorMsg poison = PoisonPill.getInstance();
+        System.out.println(poison.toString());
+        poison = new ErrorMsg(new IllegalAccessException(), null);
+        System.out.println(poison.toString());
+        poison = new ErrorMsg(new IllegalAccessException(), null);
+        System.out.println(poison.toString());
+        poison = PoisonPill.getInstance();
+        System.out.println(poison.toString());
+        } catch (Exception ex) {
+        System.out.println(ex.getMessage());
+        }*/
+    }
+    
+    void test2() {
+        //TODO: Compare performance with AKKA
+        try {
+            universe.start();
+            status.start();
+            
+            ContadorActor ping = (ContadorActor)universe.addActor(new ContadorActor(100000), "PING");
+            ContadorActor pong = (ContadorActor)universe.addActor(new ContadorActor(100000), "PONG");
+            
+            ping.start();
+            pong.start();
+            
+            ping.tell("contar", pong);
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -87,5 +140,13 @@ public class YMActors {
             universe.ShutDownNow();
             status.interrupt();
         }
+        
+        BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
+            try {
+                buf.readLine();
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
     }
+    
 }

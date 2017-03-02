@@ -1,36 +1,36 @@
 package com.yarhoslav.ymactors.core;
 
 import com.yarhoslav.ymactors.core.actors.BaseActor;
-import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.actors.UniverseActor;
-import com.yarhoslav.ymactors.core.interfaces.ActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
+import com.yarhoslav.ymactors.core.services.YMExecutorService;
 import static java.lang.System.currentTimeMillis;
-import java.util.Iterator;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.interfaces.ISystem;
+import com.yarhoslav.ymactors.core.interfaces.IWorker;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  *
  * @author yarhoslav
  */
-public class ActorSystem {
+public class ActorSystem implements ISystem {
 
     private final Logger logger = LoggerFactory.getLogger(ActorSystem.class);
-
-    //TODO: Design a better executor service to avoid actors being executed in different threads.
-    private final ExecutorService living = new ForkJoinPool();
-    private final AtomicBoolean isAlive = new AtomicBoolean(false);
+    private final YMExecutorService living = new YMExecutorService(8); //TODO: Create APPConfig with external config file
     private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1); //TODO: Create APPConfig with external config file
+    private final AtomicBoolean isAlive = new AtomicBoolean(false);
     private final String name;
-    private final long startTime = currentTimeMillis();
     private UniverseActor universeActor;
+    private IActorContext universeContext;
+    private final ConcurrentMap<String, IActorRef> actors = new ConcurrentHashMap<>();
+    private final long startTime = currentTimeMillis();
 
     //TODO: Create own exception classes
     public ActorSystem(String pName) throws IllegalArgumentException {
@@ -42,27 +42,47 @@ public class ActorSystem {
 
     public void start() {
         universeActor = new UniverseActor();
-        UniverseContext newContext = new UniverseContext(universeActor, EmptyActor.getInstance(), this);
         universeActor.setName(UniverseActor.SYSTEMACTOR);
-        universeActor.setContext(newContext);
+        universeActor.setSystem(this);
         universeActor.start();
         isAlive.set(true);
     }
 
-    public IActorContext getContext() {
-        return universeActor.getContext();
-    }
-
-    public ActorRef findActor(String pName) {
-        return universeActor.getContext().findActor(pName);
-    }
-
-    public void queueUp(ActorRef pActor) {
-        if (isAlive.get()) {
-            living.execute(pActor);
-        } else {
-            logger.warn("System {} is inactive. Actor {} can not be enqueued.", new Object[]{name, pActor.getName()});
+    @Override
+    public IActorRef findActor(String pName) throws IllegalArgumentException {
+        IActorRef actor = actors.get(pName);
+        if (actor == null) {
+            throw new IllegalArgumentException(String.format("Actor with name:%s not found in System %s.", pName, name));
         }
+        return actor;
+    }
+
+    @Override
+    public <E extends BaseActor> IActorRef addActor(E pActorType, String pName) throws IllegalArgumentException {
+        if (actors.containsKey(pName)) {
+            throw new IllegalArgumentException(String.format("Name:%s already used in System %s", pName, name));
+        } else {
+            E newChild = pActorType;
+            newChild.setName(pName);
+            newChild.setSystem(this);
+            newChild.start();
+            actors.put(pName, newChild);
+            return newChild;
+        }
+    }
+
+    @Override
+    public void queueUp(IWorker pWorker) {
+        if (isAlive.get()) {
+            living.offer(pWorker);
+        } else {
+            logger.warn("System {} is inactive. New worker cannot be enqueued.", name);
+        }
+    }
+
+    @Override
+    public int getDispatcher() {
+        return living.getDispacher();
     }
 
     public void ShutDownNow() {
@@ -70,6 +90,7 @@ public class ActorSystem {
         isAlive.set(false);
         logger.info("Actors Container {} is shutting down.", name);
         scheduler.shutdownNow();
+        /*
         living.shutdown();
         try {
             living.awaitTermination(60, TimeUnit.SECONDS);
@@ -77,25 +98,16 @@ public class ActorSystem {
             logger.warn("An error occurs trying to shutdown the workpool.", ex);
         } finally {
             living.shutdownNow();
-        }
-    }
-
-    public ActorRef newActor(BaseActor pActorType, String pName) {
-        return universeActor.getContext().newActor(pActorType, pName);
+        }*/
     }
 
     public synchronized String getEstadistica() {
         String tmp = "Start: " + startTime;
-        int i = 0;
-        Iterator it = universeActor.getContext().getChildren();
-        while (it.hasNext()) {
-            i++;
-            it.next();
-        }
 
         tmp = tmp + " Up:" + getUpTime();
-        tmp = tmp + " System Heartbeats:" + universeActor.getHeartbeats();
-        tmp = tmp + " Actores:" + i + " Executor service:" + living.toString();
+        tmp = tmp + " Mensajes:" + living.mensajes.get();
+        tmp = tmp + " Actores:" + actors.size();
+        tmp = tmp + " Executor service:" + living.toString();
 
         return tmp;
     }
@@ -104,8 +116,22 @@ public class ActorSystem {
         return currentTimeMillis() - startTime;
     }
 
-    public void tell(Object pData, ActorRef pSender) {
+    public void tell(Object pData, IActorRef pSender) {
+        logger.info("Universe actor recibe un mensaje de: {}", pSender.getName());
         universeActor.tell(pData, pSender);
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public void removeActor(IActorRef pActor) throws IllegalArgumentException {
+        IActorRef actor = actors.remove(pActor.getName());
+        if (actor == null) {
+            throw new IllegalArgumentException(String.format("Name:%s does not exists in System %s", pActor.getName(), name));
+        }
     }
 
 }

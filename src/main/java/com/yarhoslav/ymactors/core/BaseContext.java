@@ -1,88 +1,40 @@
 package com.yarhoslav.ymactors.core;
 
-import com.yarhoslav.ymactors.core.actors.BaseActor;
-import com.yarhoslav.ymactors.core.actors.EmptyActor;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import com.yarhoslav.ymactors.core.interfaces.ActorRef;
-import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.yarhoslav.ymactors.core.interfaces.IActorState;
+import com.yarhoslav.ymactors.core.interfaces.ISystem;
 
 /**
  *
  * @author yarhoslavme
  */
 public final class BaseContext implements IActorContext {
+    //TODO: ENUM with states of the actor's context
 
-    private final BaseActor owner;
-    private final ActorRef parent;
-    private final Map<String, BaseActor> children;
-    private final ActorSystem system;
-    private final AtomicBoolean isQueued;
+    Logger logger = LoggerFactory.getLogger(BaseContext.class);
+    private final ISystem system;
+    private IActorState state;
 
-    public BaseContext(BaseActor pOwner, ActorRef pParent, ActorSystem pSystem) {
-        owner = pOwner;
-        parent = pParent;
-        children = new ConcurrentHashMap<>();
+    public BaseContext(ISystem pSystem) {
         system = pSystem;
-        isQueued = new AtomicBoolean(false);
     }
 
     @Override
-    public void requestQueue() {
-        if (isQueued.compareAndSet(false, true)) {
-            system.queueUp(owner);
-        }
-    }
-    
-    @Override
-    public void dequeue() {
-        isQueued.set(false);
-    }
-
-    @Override
-    public ActorRef newActor(BaseActor pActorType, String pName) {
-        if (children.containsKey(pName)) {
-            //TODO: Raise an exception when name is already used.
-            return children.get(pName);
-        }
-        BaseActor newChild = pActorType;
-        BaseContext newContext = new BaseContext(newChild, owner, system);
-        newChild.setContext(newContext);
-        newChild.setName(pName);
-        newChild.start();
-        children.put(pName, newChild);
-        return newChild;
-    }
-
-    @Override
-    public ActorRef findActor(String pName) {
-        ActorRef tmpActor = children.get(pName);
-        if (tmpActor == null) {
-            //TODO: Should throws and Exception?
-            tmpActor = EmptyActor.getInstance();
-        }
-        return tmpActor;
-    }
-
-    @Override
-    public ActorSystem getSystem() {
+    public ISystem getSystem() {
         return system;
     }
 
     @Override
-    public ActorRef getParent() {
-        return parent;
+    public void setState(IActorState pState) {
+        //TODO: Trigger event notification
+        state = pState;
     }
 
     @Override
-    public void forgetActor(ActorRef pActor) {
-        children.remove(pActor.getName());
+    public IActorState getState() {
+        return state;
     }
 
-    @Override
-    public Iterator getChildren() {
-        return children.entrySet().iterator();
-    }
 }
