@@ -1,6 +1,6 @@
 package com.yarhoslav.ymactors.core.messages;
 
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.actors.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IEnvelope;
 
 /**

@@ -1,5 +1,7 @@
 package com.yarhoslav.ymactors.core.interfaces;
 
+import com.yarhoslav.ymactors.core.actors.IActorRef;
+
 /**
  *
  * @author yarhoslavme

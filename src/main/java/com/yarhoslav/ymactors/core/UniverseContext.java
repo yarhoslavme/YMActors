@@ -3,7 +3,7 @@ package com.yarhoslav.ymactors.core;
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.actors.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorState;
 import com.yarhoslav.ymactors.core.interfaces.ISystem;
 

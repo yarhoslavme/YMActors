@@ -2,7 +2,7 @@ package com.yarhoslav.ymactors.core.states;
 
 import com.yarhoslav.ymactors.core.interfaces.IAction;
 import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.actors.IActorRef;
 import com.yarhoslav.ymactors.core.interfaces.IActorState;
 import java.util.HashMap;
 import java.util.Map;

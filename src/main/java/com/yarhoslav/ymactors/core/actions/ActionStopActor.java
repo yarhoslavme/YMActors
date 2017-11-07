@@ -3,7 +3,7 @@ package com.yarhoslav.ymactors.core.actions;
 import com.yarhoslav.ymactors.core.actors.BaseActor;
 import com.yarhoslav.ymactors.core.interfaces.IAction;
 import com.yarhoslav.ymactors.core.interfaces.IActorMsg;
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import com.yarhoslav.ymactors.core.actors.IActorRef;
 
 /**
  *

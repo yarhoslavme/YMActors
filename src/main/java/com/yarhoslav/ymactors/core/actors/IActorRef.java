@@ -1,4 +1,4 @@
-package com.yarhoslav.ymactors.core.interfaces;
+package com.yarhoslav.ymactors.core.actors;
 
 /**
  *
@@ -10,4 +10,5 @@ public interface IActorRef {
 
     public String getName();
 
+    public String getAddress();
 }
