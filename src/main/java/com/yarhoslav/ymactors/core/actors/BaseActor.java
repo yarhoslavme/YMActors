@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.yarhoslav.ymactors.core.interfaces.ISystem;
 import com.yarhoslav.ymactors.core.interfaces.IWorker;
-import com.yarhoslav.ymactors.core.messages.BaseEnvelope;
+import com.yarhoslav.ymactors.core.messages.SimpleEnvelope;
 import com.yarhoslav.ymactors.core.states.RunningState;
 import com.yarhoslav.ymactors.core.states.StoppingState;
 
@@ -78,7 +78,7 @@ public abstract class BaseActor implements IActorRef {
         if (!isAlive.get()) {
             return;
         }
-        worker.newMessage(new BaseEnvelope(pData, pSender));
+        worker.newMessage(new SimpleEnvelope(pData, pSender));
     }
 
     @Override

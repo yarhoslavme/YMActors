@@ -1,14 +1,19 @@
 package com.yarhoslav.ymactors.core.actors;
 
+import com.yarhoslav.ymactors.core.messages.IEnvelope;
+
 /**
  *
  * @author YarhoslavME
  */
 public interface IActorRef {
 
-    public void tell(Object pData, IActorRef pSender) throws IllegalStateException;
+    //TODO: Validate exceptions.
+    public void tell(Object pData, IActorRef pSender);
 
-    public String getName();
+    public void tell(IEnvelope pEnvelope);
 
-    public String getAddress();
+    public String name();
+
+    public String address();
 }

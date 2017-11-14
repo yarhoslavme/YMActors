@@ -2,7 +2,7 @@ package com.yarhoslav.ymactors.core;
 
 import com.yarhoslav.ymactors.core.interfaces.IActorContext;
 import com.yarhoslav.ymactors.core.actors.IActorRef;
-import com.yarhoslav.ymactors.core.interfaces.IEnvelope;
+import com.yarhoslav.ymactors.core.messages.IEnvelope;
 import com.yarhoslav.ymactors.core.interfaces.IWorker;
 import com.yarhoslav.ymactors.core.messages.ErrorMsg;
 import java.util.Queue;
