@@ -73,13 +73,7 @@ public abstract class BaseActor implements IActorRef {
         }
     }
 
-    @Override
-    public void tell(Object pData, IActorRef pSender) throws IllegalStateException {
-        if (!isAlive.get()) {
-            return;
-        }
-        worker.newMessage(new SimpleEnvelope(pData, pSender));
-    }
+
 
     @Override
     public String getName() {

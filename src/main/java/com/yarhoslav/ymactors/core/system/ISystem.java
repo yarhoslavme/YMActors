@@ -1,7 +1,7 @@
 package com.yarhoslav.ymactors.core.system;
 
 import com.yarhoslav.ymactors.core.actors.IActorRef;
-import com.yarhoslav.ymactors.core.actors.SimpleActor;
+
 import java.util.concurrent.Callable;
 
 /**
@@ -12,9 +12,11 @@ public interface ISystem {
 
     public boolean requestQuantum(Callable pActor);
 
-    public <E extends SimpleActor> IActorRef createActor(E pActorType, String pName) throws IllegalArgumentException;
+    public IActorRef addActor(IActorRef pActor) throws IllegalArgumentException;
 
-    public void removeActor();
+    public IActorRef removeActor(IActorRef pActor) throws IllegalArgumentException;
 
-    public void findActor();
+    public IActorRef getActor(String pId) throws IllegalArgumentException;
+    
+    //TODO: Add scheduler API.
 }

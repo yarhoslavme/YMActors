@@ -1,11 +1,14 @@
 package com.yarhoslav.ymactors.core.system;
 
 import com.yarhoslav.ymactors.core.actors.IActorRef;
-import com.yarhoslav.ymactors.core.actors.SimpleActor;
+
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,63 +16,77 @@ import org.slf4j.LoggerFactory;
  *
  * @author yarhoslavme
  */
-public class ActorSystem implements ISystem {
+public final class ActorSystem implements ISystem {
 
     private final Logger logger = LoggerFactory.getLogger(ActorSystem.class);
 
     private final String name;
     private final QuantumExecutor quantumsExecutor;
+    private final ScheduledExecutorService scheduler;
     private final Map<String, IActorRef> actors;
 
+    //TODO: Better Name restrictions checking
     public ActorSystem(String pName) {
         if (pName.length() <= 0) {
             throw new IllegalArgumentException("ActorSystem's name can't be blank");
         }
         name = pName;
         quantumsExecutor = new QuantumExecutor();
+        scheduler = new ScheduledThreadPoolExecutor(1);
         actors = new ConcurrentHashMap<>();
     }
 
+    //ActorSystem API
     @Override
     public boolean requestQuantum(Callable pActor) {
         try {
             quantumsExecutor.submit(pActor);
             return true;
         } catch (RejectedExecutionException | NullPointerException ex) {
-            logger.warn("Failed submitting new task to Quantum Executor {}.", pActor, ex);
+            logger.warn("Failed submitting new task to Quantum Executor {}.  Exception ignored.", pActor, ex);
             return false;
         }
-
     }
 
-    //ActorSystem API
     public String name() {
         return name;
     }
 
+    public void start() {
+        //TODO: Change Status.
+    }
+
+    public void stop() {
+        //TODO: Send PoisonPill to UserSpace and SystemSpace
+    }
+
     //ISystem implementation
     @Override
-    public <E extends SimpleActor> IActorRef createActor(E pActorType, String pName) throws IllegalArgumentException {
-        if (actors.containsKey(pName)) {
-            throw new IllegalArgumentException(String.format("Name:%s already used in System %s", pName, name));
+    public IActorRef addActor(IActorRef pActor) throws IllegalArgumentException {
+        if (actors.containsKey(pActor.id())) {
+            throw new IllegalArgumentException(String.format("Actor Id:%s already used in System %s", pActor.id(), name));
         } else {
-            E newActor = pActorType;
-            newActor.setName(pName);
-            newActor.setSystem(this);
-            newActor.start();
-            actors.put(pName, newActor);
-            return newActor;
+            actors.put(pActor.id(), pActor);
+            return pActor;
         }
     }
 
     @Override
-    public void removeActor() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public IActorRef removeActor(IActorRef pActor) throws IllegalArgumentException {
+        if (!actors.containsKey(pActor.id())) {
+            throw new IllegalArgumentException(String.format("Actor Id:%s doesn't exists in System %s", pActor.id(), name));
+        } else {
+            return actors.remove(pActor.id());
+        }
     }
 
     @Override
-    public void findActor() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public IActorRef getActor(String pId) throws IllegalArgumentException {
+        if (!actors.containsKey(pId)) {
+            throw new IllegalArgumentException(String.format("Actor Id:%s doesn't exists in System %s", pId, name));
+        } else {
+            return actors.remove(pId);
+        }
     }
 
 }

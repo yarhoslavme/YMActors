@@ -23,6 +23,7 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
     //TODO: Create a Context class
     private final String name;
     private final String addr;
+    private final String id;
     private final IActorRef parent;
     private final ISystem system;
     private final IActorMind subconscious;
@@ -31,13 +32,12 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
     private IEnvelope actualEnvelope;
     private final AtomicBoolean hasQuantum;
 
-    public SimpleActor(String pName, String pAddr, IActorRef pParent, ISystem pSystem, IActorMind pConsious) {
-        //TODO: constructor with Context parameter
-        //TODO: Check name and addr constraints
-        //TODO: ActorConsciuos => User defined behaviour
+    public SimpleActor(String pName, String pAddr, IActorRef pParent, ISystem pSystem, IActorMind pConsious) throws IllegalArgumentException {
+        //TODO: Check name and addr constraints and throws Exception
         //TODO: Move Mailbox creation out of the actor to allow user changes the type of mailbox.
         name = pName;
         addr = pAddr;
+        id = addr + "/" + name;
         parent = pParent;
         system = pSystem;
         subconscious = new ActorSubconscious();
@@ -61,7 +61,7 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
             requestQuantum();
         }
     }
-    
+
     @Override
     public void tell(IEnvelope pEnvelope) {
         mailbox.offer(pEnvelope);
@@ -70,6 +70,33 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
         }
     }
 
+    @Override
+    public String id() {
+        return id;
+    }
+
+    public void postStart() throws Exception {
+    }
+
+    public void beforeStop() throws Exception {
+    }
+
+    public void handleException(Object pData, IActorRef pSender) {
+    }
+    
+    public final void start() {
+        //TODO: Change status
+        //TODO: Call postStart
+    }
+    
+    public final void stop() {
+        //TODO: Send PoisonPill to all minions.
+        //TODO: Change status
+        //TODO: Call beforeStop
+        system.removeActor(this);
+    }
+
+    //IActorContext Interface Impelmentation
     @Override
     public String name() {
         return name;
@@ -94,7 +121,7 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
     public IEnvelope envelope() {
         return actualEnvelope;
     }
-    
+
     @Override
     public IActorRef parent() {
         return parent;
@@ -104,7 +131,6 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
     @Override
     public Object call() throws Exception {
         //TODO: Validate NULL subconcious and NULL conscious?.
-
         //TODO: Allow multiple messages in the same quantum?
         actualEnvelope = mailbox.poll();
         if (actualEnvelope != null) {
@@ -114,13 +140,15 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
                 subconscious.process();
                 conscious.process();
             } catch (Exception e) {
-                logger.warn("An exception occurs processing message {}", name, e);
-                //TODO: Handle errors.
+                logger.warn("An exception occurs processing message {}.  Excetion was ignored.", name, e);
+                //TODO: Handle errors.  Put Actor in ERROR status.  Trigger ERROR procedures.
             }
         }
 
         if (!mailbox.isEmpty()) {
             requestQuantum();
+        } else {
+            hasQuantum.set(false);
         }
 
         //TODO: Validate the returned value

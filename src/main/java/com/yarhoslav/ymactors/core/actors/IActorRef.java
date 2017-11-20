@@ -16,4 +16,6 @@ public interface IActorRef {
     public String name();
 
     public String address();
+
+    public String id();
 }
