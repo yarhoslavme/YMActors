@@ -12,4 +12,6 @@ public interface IEnvelope {
     public IActorRef sender();
 
     public Object message();
+    
+    //TODO: Type of message
 }

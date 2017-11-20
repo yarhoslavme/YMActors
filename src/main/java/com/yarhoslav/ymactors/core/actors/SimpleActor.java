@@ -16,30 +16,34 @@ import org.slf4j.LoggerFactory;
  *
  * @author yarhoslavme
  */
-public abstract class SimpleActor implements IActorRef, Callable {
+public final class SimpleActor implements IActorRef, Callable, IActorContext {
 
     private final Logger logger = LoggerFactory.getLogger(SimpleActor.class);
 
     //TODO: Create a Context class
     private final String name;
     private final String addr;
+    private final IActorRef parent;
     private final ISystem system;
     private final IActorMind subconscious;
+    private final IActorMind conscious;
     private final Queue<IEnvelope> mailbox;
-    private IEnvelope actualmsg;
+    private IEnvelope actualEnvelope;
     private final AtomicBoolean hasQuantum;
 
-    public SimpleActor(String pName, String pAddr, ISystem pSystem) {
+    public SimpleActor(String pName, String pAddr, IActorRef pParent, ISystem pSystem, IActorMind pConsious) {
         //TODO: constructor with Context parameter
         //TODO: Check name and addr constraints
         //TODO: ActorConsciuos => User defined behaviour
         //TODO: Move Mailbox creation out of the actor to allow user changes the type of mailbox.
         name = pName;
         addr = pAddr;
+        parent = pParent;
         system = pSystem;
         subconscious = new ActorSubconscious();
         mailbox = new ConcurrentLinkedQueue<>();
         hasQuantum = new AtomicBoolean(false);
+        conscious = pConsious;
     }
 
     private void requestQuantum() {
@@ -47,8 +51,6 @@ public abstract class SimpleActor implements IActorRef, Callable {
     }
 
     //SimpleActor API
-    abstract public void process() throws Exception;
-
     //IActorRef Interface Implementation
     @Override
     public void tell(Object pData, IActorRef pSender) {
@@ -78,16 +80,24 @@ public abstract class SimpleActor implements IActorRef, Callable {
         return addr;
     }
 
+    @Override
     public IActorRef myself() {
         return this;
     }
 
+    @Override
     public ISystem system() {
         return system;
     }
 
-    public IEnvelope message() {
-        return actualmsg;
+    @Override
+    public IEnvelope envelope() {
+        return actualEnvelope;
+    }
+    
+    @Override
+    public IActorRef parent() {
+        return parent;
     }
 
     //Callable Interface Implementation
@@ -96,13 +106,13 @@ public abstract class SimpleActor implements IActorRef, Callable {
         //TODO: Validate NULL subconcious and NULL conscious?.
 
         //TODO: Allow multiple messages in the same quantum?
-        actualmsg = mailbox.poll();
-        if (actualmsg != null) {
+        actualEnvelope = mailbox.poll();
+        if (actualEnvelope != null) {
             try {
                 //TODO: call subconscious only when message from system arrives.
                 //TODO: Types of messages: (System, User, Child) - Call different process.
                 subconscious.process();
-                process();
+                conscious.process();
             } catch (Exception e) {
                 logger.warn("An exception occurs processing message {}", name, e);
                 //TODO: Handle errors.

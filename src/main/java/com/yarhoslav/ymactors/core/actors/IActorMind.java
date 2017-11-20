@@ -7,5 +7,5 @@ package com.yarhoslav.ymactors.core.actors;
 public interface IActorMind {
 
     public void process() throws Exception;
-
+   
 }
