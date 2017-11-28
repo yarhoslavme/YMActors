@@ -4,13 +4,13 @@ import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 import me.yarhoslav.ymactors.core.minds.InternalActorMind;
 import me.yarhoslav.ymactors.core.minds.IActorMind;
 import me.yarhoslav.ymactors.core.messages.IEnvelope;
-import me.yarhoslav.ymactors.core.messages.SimpleEnvelope;
 import me.yarhoslav.ymactors.core.system.ISystem;
 import java.util.Queue;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import me.yarhoslav.ymactors.core.messages.NormalPriorityEnvelope;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +62,7 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
         if (!isAlive.get()) {
             return;
         }
-        mailbox.offer(new SimpleEnvelope(pData, SimpleEnvelope.NORMALPRIORITY, pSender));
+        mailbox.offer(new NormalPriorityEnvelope(pData, pSender));
         if (!hasQuantum.get()) {
             requestQuantum();
         }

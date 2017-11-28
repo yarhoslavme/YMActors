@@ -29,7 +29,7 @@ public final class ActorSystem implements ISystem {
 
     private final String name;
     private final QuantumExecutor quantumsExecutor;
-    private final ScheduledExecutorService scheduler;  //TODO: Public methods to schedule a message.
+    private final ScheduledExecutorService scheduler;  //TODO: Implement separate class to handle Scheduler
     private final Map<String, IActorRef> actors;
     private final SimpleActor userSpace;
 
