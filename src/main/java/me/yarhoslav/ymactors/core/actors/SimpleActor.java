@@ -158,8 +158,6 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
             actualEnvelope = mailbox.poll();
             if (actualEnvelope != null) {
                 try {
-                    //TODO: call internalMind only when message from system arrives.
-                    //TODO: Types of messages: (System, User, Child) - Call different process.
                     internalMind.process();
                     externalMind.process();
                 } catch (Exception e) {
