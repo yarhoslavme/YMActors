@@ -1,32 +1,33 @@
 package ymactors;
 
-import com.yarhoslav.ymactors.core.actors.BaseActor;
-import com.yarhoslav.ymactors.core.messages.PoisonPill;
+import me.yarhoslav.ymactors.core.messages.PoisonPill;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.yarhoslav.ymactors.core.interfaces.IActorRef;
+import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 
 /**
  *
  * @author YarhoslavME
  */
-public class ContadorActor extends BaseActor {
+public class ContadorActor extends SimpleExternalActorMind {
 
     Logger logger = LoggerFactory.getLogger(ContadorActor.class);
     private int contador;
-    
+
     public ContadorActor(int pContador) {
         contador = pContador;
     }
 
     @Override
-    public void process(Object msj, IActorRef pSender) {
-        if (msj.equals("contar")) {
+    public void process() throws Exception {
+        if (context().envelope().message().equals("contar")) {
             contador--;
+            logger.debug("Contador {} cuenta {}", context().name(), contador);
             if (contador <= 0) {
-                tell(PoisonPill.getInstance(), this);
+                context().myself().tell(PoisonPill.INSTANCE, context().myself());
+                logger.debug("Contador {} cuenta {} - finalizando", context().name(), contador);
             } else {
-                tell("contar", this);
+                context().myself().tell("contar", context().myself());
             }
         }
     }
