@@ -28,7 +28,7 @@ public final class ActorSystem implements ISystem {
     private final QuantumExecutor quantumsExecutor;
     private final ScheduledExecutorService scheduler;  //TODO: Public methods to schedule a message.
     private final Map<String, IActorRef> actors;
-    private final SimpleActor userSpace = new SimpleActor("userspace", "/", new NullActor(), this, new DumbMind());
+    private final SimpleActor userSpace;
 
     //TODO: Better Name restrictions checking
     public ActorSystem(String pName) {
@@ -39,6 +39,7 @@ public final class ActorSystem implements ISystem {
         quantumsExecutor = new QuantumExecutor();
         scheduler = new ScheduledThreadPoolExecutor(1);
         actors = new ConcurrentHashMap<>();
+        userSpace = new SimpleActor("userspace", name+":/", NullActor.INSTANCE, this, new DumbMind());
     }
 
     //ActorSystem API
@@ -86,7 +87,7 @@ public final class ActorSystem implements ISystem {
     }
 
     @Override
-    public IActorRef getActor(String pId) throws IllegalArgumentException {
+    public IActorRef findActor(String pId) throws IllegalArgumentException {
         if (!actors.containsKey(pId)) {
             throw new IllegalArgumentException(String.format("Actor Id:%s doesn't exists in System %s", pId, name));
         } else {
@@ -96,6 +97,10 @@ public final class ActorSystem implements ISystem {
     
     public <E extends SimpleExternalActorMind> IActorRef createMinion(E pMinionMind, String pName) {
         return userSpace.createMinion(pMinionMind, pName);
+    }
+    
+    public String estadistica() {
+        return "Actores:" + actors.size()+". Forkjoint:"+quantumsExecutor.toString();
     }
 
 }

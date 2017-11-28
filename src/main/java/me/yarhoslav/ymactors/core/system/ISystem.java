@@ -16,7 +16,7 @@ public interface ISystem {
 
     public IActorRef removeActor(IActorRef pActor) throws IllegalArgumentException;
 
-    public IActorRef getActor(String pId) throws IllegalArgumentException;
+    public IActorRef findActor(String pId) throws IllegalArgumentException;
     
     //TODO: Add scheduler API.
 }

@@ -25,6 +25,7 @@ public class ContadorActor extends SimpleExternalActorMind {
             logger.debug("Contador {} cuenta {}", context().name(), contador);
             if (contador <= 0) {
                 context().myself().tell(PoisonPill.INSTANCE, context().myself());
+                logger.debug("Contador {} cuenta {} - finalizando", context().name(), contador);
             } else {
                 context().myself().tell("contar", context().myself());
             }

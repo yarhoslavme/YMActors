@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import static java.lang.System.currentTimeMillis;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import me.yarhoslav.ymactors.core.actors.NullActor;
 
 /**
  *
@@ -30,6 +31,7 @@ public class YMActors {
                 }
 
                 System.out.println(" Tiempo:" + (currentTimeMillis() - inicio));
+                System.out.println(user.estadistica());
             }
         }
     };
@@ -40,21 +42,16 @@ public class YMActors {
      * @throws java.lang.InterruptedException If any error occurs
      */
     public static void main(String[] args) throws InterruptedException {
-        // TODO code application logic here
-
         YMActors yma = new YMActors();
-
-        yma.test1();
-
+        yma.test2();
     }
 
-   
     void test1() {
         //TODO: Compare performance with AKKA
         try {
             user.start();
             status.start();
-            
+
             IActorRef contador = user.createMinion(new ContadorActor(10), "contador");
             contador.tell("contar", contador);
 
@@ -70,13 +67,66 @@ public class YMActors {
             user.shutdown();
             status.interrupt();
         }
-        
+
         BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
+        try {
+            buf.readLine();
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    void test2() {
+        //TODO: Compare performance with AKKA
+        try {
+            user.start();
+            status.start();
+            
+            int TOTALACTORES = 100;
+            System.out.println("CREANDO ACTORES: " + TOTALACTORES);
+
+            ContadorActor contador;
+            for (int i = 0; i < TOTALACTORES; i++) {
+                contador = new ContadorActor(1000000);
+                IActorRef x = user.createMinion(contador, "contador" + i);
+                //System.out.println(x.id());
+                //for (int j = 0; j < 10; j++) {
+                //    IActorRef y = contador.context().createMinion(new ContadorActor(10), "contador" + j);
+                //    System.out.println(y.id());
+                //}
+            }
+            
+            System.out.println("INICIANDO MENSAJES!!!!!");
+            IActorRef otro;
+            for (int i = 0; i < TOTALACTORES; i++) {
+                try {
+                    otro = user.findActor("TEST://userspace/contador" + i);
+                    //System.out.println(otro.id());
+                    otro.tell("contar", NullActor.INSTANCE);
+                } catch (IllegalArgumentException e) {
+                    System.out.println(e);
+                }
+            }
+            System.out.println("YA SE ENVIARON TODOS LOS MENSAJES!!!!!");
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        } finally {
+            BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
             try {
                 buf.readLine();
             } catch (IOException ex) {
                 System.out.println(ex.getMessage());
             }
+            user.shutdown();
+            status.interrupt();
+        }
+
+        BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
+        try {
+            buf.readLine();
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }
     }
-    
 }

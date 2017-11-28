@@ -6,7 +6,13 @@ import me.yarhoslav.ymactors.core.messages.IEnvelope;
  *
  * @author yarhoslavme
  */
-public class NullActor implements IActorRef {
+public final class NullActor implements IActorRef {
+
+    public static final NullActor INSTANCE = new NullActor();
+
+    private NullActor() {
+
+    }
 
     @Override
     public void tell(Object pData, IActorRef pSender) {
@@ -30,5 +36,5 @@ public class NullActor implements IActorRef {
     public String id() {
         return "";
     }
-    
+
 }
