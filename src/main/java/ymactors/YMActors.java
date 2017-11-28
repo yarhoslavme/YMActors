@@ -1,7 +1,7 @@
 package ymactors;
 
-import com.yarhoslav.ymactors.core.ActorSystem;
-import com.yarhoslav.ymactors.core.actors.EmptyActor;
+import com.yarhoslav.ymactors.core.actors.IActorRef;
+import com.yarhoslav.ymactors.core.system.ActorSystem;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class YMActors {
 
     static final long inicio = currentTimeMillis();
-    static final ActorSystem universe = new ActorSystem("TEST");
+    static final ActorSystem user = new ActorSystem("TEST");
     static final Runnable hilo = new Runnable() {
         public AtomicBoolean parar = new AtomicBoolean(false);
 
@@ -29,7 +29,7 @@ public class YMActors {
                     parar.set(true);
                 }
 
-                System.out.println(universe.getEstadistica() + " Tiempo:" + (currentTimeMillis() - inicio));
+                System.out.println(" Tiempo:" + (currentTimeMillis() - inicio));
             }
         }
     };
@@ -48,85 +48,15 @@ public class YMActors {
 
     }
 
+   
     void test1() {
         //TODO: Compare performance with AKKA
         try {
-            universe.start();
+            user.start();
             status.start();
             
-            ContadorActor ca = null;
-            for (int i = 0; i < 1000; i++) {
-                ca = (ContadorActor) universe.addActor(new ContadorActor(10), "CONTADOR" + i);
-                ca.tell("contar", EmptyActor.getInstance());
-            }
-            
-            System.out.println("Ultimo actor: " + ca.getName());
-/*
-            IActorRef tmpActor = universe.findActor("/CONTADOR0");
-            System.out.println("/CONTADOR0/"+tmpActor.getName());
-            tmpActor.getContext().newActor(new ContadorActor(5), "OTRO");
-            System.out.println("/CONTADOR100/"+universe.findActor("/CONTADOR100").getName());
-            System.out.println("/OTRO/"+universe.findActor("/OTRO").getName());
-            tmpActor = universe.findActor("/CONTADOR0/OTRO");
-            tmpActor.getContext().newActor(new ContadorActor(2), "OTRO");
-            tmpActor.getContext().newActor(new ContadorActor(10), "PERRO");
-            tmpActor = universe.findActor("/CONTADOR0/OTRO");
-            System.out.println("/CONTADOR0/OTRO/"+tmpActor.getContext().findActor("OTRO").getName());
-            System.out.println("/CONTADOR0/OTRO/"+tmpActor.getContext().findActor("PERRO").getName());*/
-
-            //universe.findActor("/CONTADOR0").tell("contar", EmptyActor.getInstance());
-            //universe.tell(new BroadCastMsg("contar", EmptyActor.getInstance()), EmptyActor.getInstance());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error: " + e);
-        } finally {
-            BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
-            try {
-                buf.readLine();
-            } catch (IOException ex) {
-                System.out.println(ex.getMessage());
-            }
-            universe.ShutDownNow();
-            status.interrupt();
-        }
-        
-        BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
-            try {
-                buf.readLine();
-            } catch (IOException ex) {
-                System.out.println(ex.getMessage());
-            }
-    }
-
-    void test3() {
-        /*        try {
-        IActorMsg poison = PoisonPill.getInstance();
-        System.out.println(poison.toString());
-        poison = new ErrorMsg(new IllegalAccessException(), null);
-        System.out.println(poison.toString());
-        poison = new ErrorMsg(new IllegalAccessException(), null);
-        System.out.println(poison.toString());
-        poison = PoisonPill.getInstance();
-        System.out.println(poison.toString());
-        } catch (Exception ex) {
-        System.out.println(ex.getMessage());
-        }*/
-    }
-    
-    void test2() {
-        //TODO: Compare performance with AKKA
-        try {
-            universe.start();
-            status.start();
-            
-            ContadorActor ping = (ContadorActor)universe.addActor(new ContadorActor(100000), "PING");
-            ContadorActor pong = (ContadorActor)universe.addActor(new ContadorActor(100000), "PONG");
-            
-            ping.start();
-            pong.start();
-            
-            ping.tell("contar", pong);
+            IActorRef contador = user.createMinion(new ContadorActor(10), "contador");
+            contador.tell("contar", contador);
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -137,7 +67,7 @@ public class YMActors {
             } catch (IOException ex) {
                 System.out.println(ex.getMessage());
             }
-            universe.ShutDownNow();
+            user.shutdown();
             status.interrupt();
         }
         

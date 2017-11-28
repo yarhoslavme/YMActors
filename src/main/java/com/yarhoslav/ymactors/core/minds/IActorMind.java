@@ -1,4 +1,4 @@
-package com.yarhoslav.ymactors.core.actors;
+package com.yarhoslav.ymactors.core.minds;
 
 /**
  *

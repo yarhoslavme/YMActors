@@ -1,6 +1,10 @@
 package com.yarhoslav.ymactors.core.system;
 
 import com.yarhoslav.ymactors.core.actors.IActorRef;
+import com.yarhoslav.ymactors.core.actors.NullActor;
+import com.yarhoslav.ymactors.core.actors.SimpleActor;
+import com.yarhoslav.ymactors.core.minds.DumbMind;
+import com.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -22,8 +26,9 @@ public final class ActorSystem implements ISystem {
 
     private final String name;
     private final QuantumExecutor quantumsExecutor;
-    private final ScheduledExecutorService scheduler;
+    private final ScheduledExecutorService scheduler;  //TODO: Public methods to schedule a message.
     private final Map<String, IActorRef> actors;
+    private final SimpleActor userSpace = new SimpleActor("userspace", "/", new NullActor(), this, new DumbMind());
 
     //TODO: Better Name restrictions checking
     public ActorSystem(String pName) {
@@ -56,7 +61,7 @@ public final class ActorSystem implements ISystem {
         //TODO: Change Status.
     }
 
-    public void stop() {
+    public void shutdown() {
         //TODO: Send PoisonPill to UserSpace and SystemSpace
     }
 
@@ -85,8 +90,12 @@ public final class ActorSystem implements ISystem {
         if (!actors.containsKey(pId)) {
             throw new IllegalArgumentException(String.format("Actor Id:%s doesn't exists in System %s", pId, name));
         } else {
-            return actors.remove(pId);
+            return actors.get(pId);
         }
+    }
+    
+    public <E extends SimpleExternalActorMind> IActorRef createMinion(E pMinionMind, String pName) {
+        return userSpace.createMinion(pMinionMind, pName);
     }
 
 }
