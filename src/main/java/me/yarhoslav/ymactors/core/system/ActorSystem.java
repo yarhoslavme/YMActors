@@ -103,29 +103,20 @@ public final class ActorSystem implements ISystem {
     }
 
     public String estadistica() {
+        //TODO: Fix this!!!
         return "Actores:" + actors.size() + ". Forkjoint:" + quantumsExecutor.toString();
     }
 
     @Override
     public ScheduledFuture schedule(IActorRef pReceiver, IEnvelope pEnvelope, long delay, TimeUnit timeunit) {
-        return scheduler.schedule(new Runnable() {
-            @Override
-            public void run() {
-                pReceiver.tell(pEnvelope);
-            }
-        },
+        return scheduler.schedule(new SchedulerTask(pReceiver, pEnvelope),
                 delay,
                 timeunit);
     }
 
     @Override
     public ScheduledFuture scheduleAtFixedRate(IActorRef pReceiver, IEnvelope pEnvelope, long initialDelay, long period, TimeUnit timeunit) {
-        return scheduler.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                pReceiver.tell(pEnvelope);
-            }
-        },
+        return scheduler.scheduleAtFixedRate(new SchedulerTask(pReceiver, pEnvelope),
                 initialDelay,
                 period,
                 timeunit);
@@ -133,12 +124,7 @@ public final class ActorSystem implements ISystem {
 
     @Override
     public ScheduledFuture scheduleWithFixedDelay(IActorRef pReceiver, IEnvelope pEnvelope, long initialDelay, long period, TimeUnit timeunit) {
-        return scheduler.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                pReceiver.tell(pEnvelope);
-            }
-        },
+        return scheduler.scheduleWithFixedDelay(new SchedulerTask(pReceiver, pEnvelope),
                 initialDelay,
                 period,
                 timeunit);
