@@ -1,7 +1,7 @@
-package com.yarhoslav.ymactors.core.minds;
+package me.yarhoslav.ymactors.core.minds;
 
-import com.yarhoslav.ymactors.core.actors.SimpleActor;
-import com.yarhoslav.ymactors.core.messages.PoisonPill;
+import me.yarhoslav.ymactors.core.actors.SimpleActor;
+import me.yarhoslav.ymactors.core.messages.PoisonPill;
 
 /**
  *

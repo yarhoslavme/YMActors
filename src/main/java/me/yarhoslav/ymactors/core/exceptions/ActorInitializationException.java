@@ -1,4 +1,4 @@
-package com.yarhoslav.ymactors.core.exceptions;
+package me.yarhoslav.ymactors.core.exceptions;
 
 /**
  *

@@ -1,4 +1,4 @@
-package com.yarhoslav.ymactors.core.messages;
+package me.yarhoslav.ymactors.core.messages;
 
 /**
  *

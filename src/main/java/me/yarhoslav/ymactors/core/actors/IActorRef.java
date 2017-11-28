@@ -1,6 +1,6 @@
-package com.yarhoslav.ymactors.core.actors;
+package me.yarhoslav.ymactors.core.actors;
 
-import com.yarhoslav.ymactors.core.messages.IEnvelope;
+import me.yarhoslav.ymactors.core.messages.IEnvelope;
 
 /**
  *

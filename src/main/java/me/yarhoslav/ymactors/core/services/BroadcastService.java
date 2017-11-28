@@ -1,6 +1,6 @@
-package com.yarhoslav.ymactors.core.services;
+package me.yarhoslav.ymactors.core.services;
 
-import com.yarhoslav.ymactors.core.actors.IActorRef;
+import me.yarhoslav.ymactors.core.actors.IActorRef;
 
 import java.util.Iterator;
 

@@ -1,9 +1,9 @@
 package ymactors;
 
-import com.yarhoslav.ymactors.core.messages.PoisonPill;
+import me.yarhoslav.ymactors.core.messages.PoisonPill;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
+import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 
 /**
  *
@@ -20,7 +20,6 @@ public class ContadorActor extends SimpleExternalActorMind {
 
     @Override
     public void process() throws Exception {
-        logger.info("Contador {} cuenta {}", context().name(), contador);
         if (context().envelope().message().equals("contar")) {
             contador--;
             logger.debug("Contador {} cuenta {}", context().name(), contador);

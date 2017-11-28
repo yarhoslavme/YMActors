@@ -1,11 +1,11 @@
-package com.yarhoslav.ymactors.core.actors;
+package me.yarhoslav.ymactors.core.actors;
 
-import com.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
-import com.yarhoslav.ymactors.core.minds.InternalActorMind;
-import com.yarhoslav.ymactors.core.minds.IActorMind;
-import com.yarhoslav.ymactors.core.messages.IEnvelope;
-import com.yarhoslav.ymactors.core.messages.SimpleEnvelope;
-import com.yarhoslav.ymactors.core.system.ISystem;
+import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
+import me.yarhoslav.ymactors.core.minds.InternalActorMind;
+import me.yarhoslav.ymactors.core.minds.IActorMind;
+import me.yarhoslav.ymactors.core.messages.IEnvelope;
+import me.yarhoslav.ymactors.core.messages.SimpleEnvelope;
+import me.yarhoslav.ymactors.core.system.ISystem;
 import java.util.Queue;
 
 import java.util.concurrent.Callable;
@@ -146,6 +146,7 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
     public <E extends SimpleExternalActorMind> IActorRef createMinion(E pMinionMind, String pName) {
         SimpleActor tmpActor = new SimpleActor(pName, this.id, this, system, pMinionMind);
         system.addActor(tmpActor);
+        tmpActor.start();
         return tmpActor;
     }
 

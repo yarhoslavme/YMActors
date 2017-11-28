@@ -1,6 +1,6 @@
-package com.yarhoslav.ymactors.core.messages;
+package me.yarhoslav.ymactors.core.messages;
 
-import com.yarhoslav.ymactors.core.actors.IActorRef;
+import me.yarhoslav.ymactors.core.actors.IActorRef;
 
 /**
  *

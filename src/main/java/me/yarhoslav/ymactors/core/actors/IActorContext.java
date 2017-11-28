@@ -1,8 +1,8 @@
-package com.yarhoslav.ymactors.core.actors;
+package me.yarhoslav.ymactors.core.actors;
 
-import com.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
-import com.yarhoslav.ymactors.core.messages.IEnvelope;
-import com.yarhoslav.ymactors.core.system.ISystem;
+import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
+import me.yarhoslav.ymactors.core.messages.IEnvelope;
+import me.yarhoslav.ymactors.core.system.ISystem;
 
 /**
  *

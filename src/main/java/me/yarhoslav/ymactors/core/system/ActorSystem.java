@@ -1,10 +1,10 @@
-package com.yarhoslav.ymactors.core.system;
+package me.yarhoslav.ymactors.core.system;
 
-import com.yarhoslav.ymactors.core.actors.IActorRef;
-import com.yarhoslav.ymactors.core.actors.NullActor;
-import com.yarhoslav.ymactors.core.actors.SimpleActor;
-import com.yarhoslav.ymactors.core.minds.DumbMind;
-import com.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
+import me.yarhoslav.ymactors.core.actors.IActorRef;
+import me.yarhoslav.ymactors.core.actors.NullActor;
+import me.yarhoslav.ymactors.core.actors.SimpleActor;
+import me.yarhoslav.ymactors.core.minds.DumbMind;
+import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 
 import java.util.Map;
 import java.util.concurrent.Callable;

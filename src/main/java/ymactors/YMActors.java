@@ -1,7 +1,7 @@
 package ymactors;
 
-import com.yarhoslav.ymactors.core.actors.IActorRef;
-import com.yarhoslav.ymactors.core.system.ActorSystem;
+import me.yarhoslav.ymactors.core.actors.IActorRef;
+import me.yarhoslav.ymactors.core.system.ActorSystem;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

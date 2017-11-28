@@ -1,6 +1,6 @@
-package com.yarhoslav.ymactors.core.system;
+package me.yarhoslav.ymactors.core.system;
 
-import com.yarhoslav.ymactors.core.actors.IActorRef;
+import me.yarhoslav.ymactors.core.actors.IActorRef;
 
 import java.util.concurrent.Callable;
 

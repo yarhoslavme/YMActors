@@ -1,4 +1,4 @@
-package com.yarhoslav.ymactors.core.system;
+package me.yarhoslav.ymactors.core.system;
 
 import java.util.concurrent.ForkJoinPool;
 
