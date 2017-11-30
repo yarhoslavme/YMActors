@@ -11,7 +11,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import me.yarhoslav.ymactors.core.messages.IEnvelope;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +29,7 @@ public final class ActorSystem implements ISystem {
 
     private final String name;
     private final QuantumExecutor quantumsExecutor;
-    private final ScheduledExecutorService scheduler;  //TODO: Public methods to schedule a message.
+    private final ScheduledExecutorService scheduler;  //TODO: Implement separate class to handle Scheduler
     private final Map<String, IActorRef> actors;
     private final SimpleActor userSpace;
 
@@ -39,7 +42,7 @@ public final class ActorSystem implements ISystem {
         quantumsExecutor = new QuantumExecutor();
         scheduler = new ScheduledThreadPoolExecutor(1);
         actors = new ConcurrentHashMap<>();
-        userSpace = new SimpleActor("userspace", name+":/", NullActor.INSTANCE, this, new DumbMind());
+        userSpace = new SimpleActor("userspace", name + ":/", NullActor.INSTANCE, this, new DumbMind());
     }
 
     //ActorSystem API
@@ -94,13 +97,37 @@ public final class ActorSystem implements ISystem {
             return actors.get(pId);
         }
     }
-    
+
     public <E extends SimpleExternalActorMind> IActorRef createMinion(E pMinionMind, String pName) {
         return userSpace.createMinion(pMinionMind, pName);
     }
-    
+
     public String estadistica() {
-        return "Actores:" + actors.size()+". Forkjoint:"+quantumsExecutor.toString();
+        //TODO: Fix this!!!
+        return "Actores:" + actors.size() + ". Forkjoint:" + quantumsExecutor.toString();
+    }
+
+    @Override
+    public ScheduledFuture schedule(IActorRef pReceiver, IEnvelope pEnvelope, long delay, TimeUnit timeunit) {
+        return scheduler.schedule(new SchedulerTask(pReceiver, pEnvelope),
+                delay,
+                timeunit);
+    }
+
+    @Override
+    public ScheduledFuture scheduleAtFixedRate(IActorRef pReceiver, IEnvelope pEnvelope, long initialDelay, long period, TimeUnit timeunit) {
+        return scheduler.scheduleAtFixedRate(new SchedulerTask(pReceiver, pEnvelope),
+                initialDelay,
+                period,
+                timeunit);
+    }
+
+    @Override
+    public ScheduledFuture scheduleWithFixedDelay(IActorRef pReceiver, IEnvelope pEnvelope, long initialDelay, long period, TimeUnit timeunit) {
+        return scheduler.scheduleWithFixedDelay(new SchedulerTask(pReceiver, pEnvelope),
+                initialDelay,
+                period,
+                timeunit);
     }
 
 }
