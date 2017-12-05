@@ -5,16 +5,15 @@ import me.yarhoslav.ymactors.core.actors.NullActor;
 import me.yarhoslav.ymactors.core.actors.SimpleActor;
 import me.yarhoslav.ymactors.core.minds.DumbMind;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
+import me.yarhoslav.ymactors.core.messages.IEnvelope;
 
-import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import me.yarhoslav.ymactors.core.messages.IEnvelope;
+import me.yarhoslav.ymactors.core.messages.PoisonPill;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,6 @@ public final class ActorSystem implements ISystem {
     private final String name;
     private final QuantumExecutor quantumsExecutor;
     private final ScheduledExecutorService scheduler;  //TODO: Implement separate class to handle Scheduler
-    private final Map<String, IActorRef> actors;
     private final SimpleActor userSpace;
 
     //TODO: Better Name restrictions checking
@@ -41,8 +39,8 @@ public final class ActorSystem implements ISystem {
         name = pName;
         quantumsExecutor = new QuantumExecutor();
         scheduler = new ScheduledThreadPoolExecutor(1);
-        actors = new ConcurrentHashMap<>();
         userSpace = new SimpleActor("userspace", name + ":/", NullActor.INSTANCE, this, new DumbMind());
+        userSpace.start();
     }
 
     //ActorSystem API
@@ -64,7 +62,10 @@ public final class ActorSystem implements ISystem {
 
     @Override
     public void shutdown() {
-        //TODO: Send PoisonPill to UserSpace and SystemSpace
+        userSpace.tell(PoisonPill.INSTANCE, NullActor.INSTANCE);
+        //TODO: While a few seconds before force shutdown.
+        quantumsExecutor.awaitQuiescence(10, TimeUnit.SECONDS);     
+        quantumsExecutor.shutdown();
     }
 
     //ISystem implementation
@@ -80,8 +81,8 @@ public final class ActorSystem implements ISystem {
         if (tmpId.startsWith(name + "://")) {
             tmpId = tmpId.substring(name.length() + ":/".length(), tmpId.length());
         }
-        if (tmpId.startsWith("userspace/")) {
-            tmpId = tmpId.substring("userspace".length(), tmpId.length());
+        if (tmpId.startsWith("/userspace")) {
+            tmpId = tmpId.substring("/userspace".length(), tmpId.length());
         }
         if (tmpId.startsWith("/")) {
             tmpId = tmpId.substring(1, tmpId.length());
@@ -96,13 +97,11 @@ public final class ActorSystem implements ISystem {
         }
     }
 
-    public <E extends SimpleExternalActorMind> IActorRef createMinion(E pMinionMind, String pName) {
-        return userSpace.createMinion(pMinionMind, pName);
-    }
-
     public String estadistica() {
         //TODO: Fix this!!!
-        return "Actores:" + actors.size() + ". Forkjoint:" + quantumsExecutor.toString();
+        return "Actores:" + userSpace.minions().count() + ". Workers:" + quantumsExecutor.getPoolSize() + " Pending:" + quantumsExecutor.getQueuedSubmissionCount() + 
+                " En cola"
+                + ":" + quantumsExecutor.getQueuedTaskCount();
     }
 
     @Override

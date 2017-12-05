@@ -1,9 +1,10 @@
 package me.yarhoslav.ymactors.core.actors.minions;
 
-import java.util.Iterator;
 import me.yarhoslav.ymactors.core.actors.IActorRef;
 import me.yarhoslav.ymactors.core.actors.SimpleActor;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
+
+import java.util.Iterator;
 
 /**
  *
@@ -16,9 +17,13 @@ public interface IMinions {
     public IActorRef find(String pId) throws IllegalArgumentException;
 
     public SimpleActor summon(String pId) throws IllegalArgumentException;
-    
+
     public IActorRef remove(IActorRef pMinion) throws IllegalArgumentException;
+
+    public Iterator all();
+
+    public void removeAll();
     
-    public Iterator allMinions();
+    public int count();
 
 }

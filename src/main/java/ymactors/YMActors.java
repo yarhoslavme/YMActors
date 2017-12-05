@@ -9,7 +9,6 @@ import static java.lang.System.currentTimeMillis;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import me.yarhoslav.ymactors.core.actors.NullActor;
-import me.yarhoslav.ymactors.core.actors.SimpleActor;
 
 /**
  *
@@ -44,7 +43,7 @@ public class YMActors {
      */
     public static void main(String[] args) throws InterruptedException {
         YMActors yma = new YMActors();
-        yma.test3();
+        yma.test2();
     }
 
     void test1() {
@@ -52,7 +51,7 @@ public class YMActors {
         try {
             status.start();
 
-            IActorRef contador = user.createMinion(new ContadorActor(10), "contador");
+            IActorRef contador = user.createActor(new ContadorActor(10), "contador");
             contador.tell("contar", contador);
 
         } catch (Exception e) {
@@ -87,7 +86,7 @@ public class YMActors {
             ContadorActor contador;
             for (int i = 0; i < TOTALACTORES; i++) {
                 contador = new ContadorActor(1000000);
-                IActorRef x = user.createMinion(contador, "contador" + i);
+                IActorRef x = user.createActor(contador, "contador" + i);
                 //System.out.println(x.id());
                 //for (int j = 0; j < 10; j++) {
                 //    IActorRef y = contador.context().createMinion(new ContadorActor(10), "contador" + j);
@@ -99,8 +98,8 @@ public class YMActors {
             IActorRef otro;
             for (int i = 0; i < TOTALACTORES; i++) {
                 try {
-                    otro = user.findActor("TEST://userspace/contador" + i);
-                    //System.out.println(otro.id());
+                    otro = user.findActor("/contador" + i);
+                    System.out.println(otro.id());
                     otro.tell("contar", NullActor.INSTANCE);
                 } catch (IllegalArgumentException e) {
                     System.out.println(e);
@@ -118,6 +117,7 @@ public class YMActors {
                 System.out.println(ex.getMessage());
             }
             user.shutdown();
+            System.out.println("EJECUCION FINALIZADA!!!!!");
             status.interrupt();
         }
 
@@ -140,7 +140,7 @@ public class YMActors {
             ContadorActor contador;
             for (int i = 0; i < TOTALACTORES; i++) {
                 contador = new ContadorActor(10);
-                IActorRef x = user.createMinion(contador, "contador" + i);
+                IActorRef x = user.createActor(contador, "contador" + i);
                 System.out.println(x.id());
                 for (int j = 0; j < 3; j++) {
                     IActorRef y = contador.context().createMinion(new ContadorActor(10), "contador" + j);

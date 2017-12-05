@@ -15,6 +15,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Queue;
 import me.yarhoslav.ymactors.core.messages.DeadMsg;
 import me.yarhoslav.ymactors.core.messages.HighPriorityEnvelope;
+import me.yarhoslav.ymactors.core.messages.PoisonPill;
+import me.yarhoslav.ymactors.core.minds.SupervisorMind;
+import me.yarhoslav.ymactors.core.services.BroadcastService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +38,7 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
     private final ISystem system;
     private final IActorMind internalMind;
     private final SimpleExternalActorMind externalMind;
+    private final IActorMind supervisorMind;
     private final Queue<IEnvelope> mailbox;
     private IEnvelope actualEnvelope;
     private final AtomicBoolean hasQuantum;
@@ -49,10 +53,11 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
         id = addr + "/" + name;
         parent = pParent;
         system = pSystem;
-        internalMind = new InternalActorMind(this);
         mailbox = new PriorityBlockingQueue<>();
         hasQuantum = new AtomicBoolean(false);
         isAlive = new AtomicBoolean(false);
+        internalMind = new InternalActorMind(this);
+        supervisorMind = new SupervisorMind(this);
         externalMind = pExternalMind;
         minions = new SimpleMinions(this, system);
     }
@@ -91,8 +96,7 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
             externalMind.initialize(this);
             externalMind.postStart();
         } catch (Exception e) {
-            logger.warn("An exception occurs starting actor {}.  Excetion was ignored.", name, e);
-            //TODO: Handle errors.  Put Actor in ERROR status.  Trigger ERROR procedures.
+            logger.warn("An exception occurs starting actor {}.  Stoping Actor.", name, e);
             stop();
         }
     }
@@ -105,10 +109,13 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
             //TODO: Handle errors.  Put Actor in ERROR status.  Trigger ERROR procedures.
         } finally {
             isAlive.set(false);
-            //TODO: send lost messages to System's Dead Messages Collector
             mailbox.clear();
             parent.tell(new HighPriorityEnvelope(DeadMsg.INSTANCE, this));
-            //TODO: Send PoisonPill to all minions.
+
+            BroadcastService broadcast = new BroadcastService(minions.all());
+            broadcast.send(new HighPriorityEnvelope(PoisonPill.INSTANCE, this));
+            
+            minions.removeAll();
         }
     }
 
@@ -157,6 +164,12 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
     public <E extends SimpleExternalActorMind> IActorRef createMinion(E pMinionMind, String pName) {
         return minions.add(pMinionMind, pName);
     }
+    
+    private void internalErrorHandler(Exception pException) {
+        //TODO: Improve error handling.
+        externalMind.handleException(pException);
+        stop();
+    }
 
     //Callable Interface Implementation
     @Override
@@ -167,10 +180,11 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
             if (actualEnvelope != null) {
                 try {
                     internalMind.process();
+                    supervisorMind.process();
                     externalMind.process();
                 } catch (Exception e) {
                     logger.warn("An exception occurs processing message {}.  Excetion was ignored.", name, e);
-                    //TODO: Handle errors.  Put Actor in ERROR status.  Trigger ERROR procedures.
+                    internalErrorHandler(e);
                 }
             }
 

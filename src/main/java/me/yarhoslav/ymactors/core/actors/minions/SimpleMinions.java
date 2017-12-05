@@ -62,8 +62,18 @@ public final class SimpleMinions implements IMinions {
     }
 
     @Override
-    public Iterator allMinions() {
+    public Iterator all() {
         return minions.values().iterator();
+    }
+
+    @Override
+    public void removeAll() {
+        minions.clear();
+    }
+
+    @Override
+    public int count() {
+        return minions.size();
     }
 
 }

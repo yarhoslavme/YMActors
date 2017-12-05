@@ -1,12 +1,12 @@
 package me.yarhoslav.ymactors.core.system;
 
 import me.yarhoslav.ymactors.core.actors.IActorRef;
+import me.yarhoslav.ymactors.core.messages.IEnvelope;
+import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import me.yarhoslav.ymactors.core.messages.IEnvelope;
-import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 
 /**
  *

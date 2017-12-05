@@ -1,9 +1,10 @@
 package ymactors;
 
 import me.yarhoslav.ymactors.core.messages.PoisonPill;
+import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 
 /**
  *
