@@ -80,7 +80,7 @@ public class YMActors {
         try {
             status.start();
 
-            int TOTALACTORES = 100;
+            int TOTALACTORES = 500;
             System.out.println("CREANDO ACTORES: " + TOTALACTORES);
 
             ContadorActor contador;
@@ -176,13 +176,14 @@ public class YMActors {
             user.shutdown();
             status.interrupt();
         }
-
+/*
         BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
         try {
             buf.readLine();
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
+*/
     }
 
 }
