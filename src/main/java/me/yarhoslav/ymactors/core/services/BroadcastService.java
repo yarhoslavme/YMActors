@@ -1,6 +1,7 @@
 package me.yarhoslav.ymactors.core.services;
 
 import me.yarhoslav.ymactors.core.actors.IActorRef;
+import me.yarhoslav.ymactors.core.messages.IEnvelope;
 
 import java.util.Iterator;
 
@@ -29,4 +30,12 @@ public final class BroadcastService {
         return this;
     }
 
+    public BroadcastService send(IEnvelope pEnvelope) {
+        while (children.hasNext()) {
+            IActorRef child = (IActorRef) children.next();
+            child.tell(pEnvelope);
+        }
+        return this;
+    }
+    
 }

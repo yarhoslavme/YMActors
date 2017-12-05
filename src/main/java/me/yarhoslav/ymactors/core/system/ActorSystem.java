@@ -57,44 +57,42 @@ public final class ActorSystem implements ISystem {
         }
     }
 
+    @Override
     public String name() {
         return name;
     }
 
-    public void start() {
-        //TODO: Change Status.
-    }
-
+    @Override
     public void shutdown() {
         //TODO: Send PoisonPill to UserSpace and SystemSpace
     }
 
     //ISystem implementation
     @Override
-    public IActorRef addActor(IActorRef pActor) throws IllegalArgumentException {
-        if (actors.containsKey(pActor.id())) {
-            throw new IllegalArgumentException(String.format("Actor Id:%s already used in System %s", pActor.id(), name));
-        } else {
-            actors.put(pActor.id(), pActor);
-            return pActor;
-        }
-    }
-
-    @Override
-    public IActorRef removeActor(IActorRef pActor) throws IllegalArgumentException {
-        if (!actors.containsKey(pActor.id())) {
-            throw new IllegalArgumentException(String.format("Actor Id:%s doesn't exists in System %s", pActor.id(), name));
-        } else {
-            return actors.remove(pActor.id());
-        }
+    public <E extends SimpleExternalActorMind> IActorRef createActor(E pMinionMind, String pName) throws IllegalArgumentException {
+        return userSpace.createMinion(pMinionMind, pName);
     }
 
     @Override
     public IActorRef findActor(String pId) throws IllegalArgumentException {
-        if (!actors.containsKey(pId)) {
-            throw new IllegalArgumentException(String.format("Actor Id:%s doesn't exists in System %s", pId, name));
+        String tmpId = pId;
+        //TODO: Check all rules for Actor's ID.
+        if (tmpId.startsWith(name + "://")) {
+            tmpId = tmpId.substring(name.length() + ":/".length(), tmpId.length());
+        }
+        if (tmpId.startsWith("userspace/")) {
+            tmpId = tmpId.substring("userspace".length(), tmpId.length());
+        }
+        if (tmpId.startsWith("/")) {
+            tmpId = tmpId.substring(1, tmpId.length());
+            String[] path = tmpId.split("/");
+            SimpleActor tmpActor = userSpace.minions().summon(path[0]);
+            for (int i = 1; i < path.length; i++) {
+                tmpActor = tmpActor.minions().summon(path[i]);
+            }
+            return tmpActor;
         } else {
-            return actors.get(pId);
+            throw new IllegalArgumentException(String.format("Invalid format for Actor's Id: %s", pId));
         }
     }
 
