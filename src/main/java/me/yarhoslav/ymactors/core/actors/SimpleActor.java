@@ -1,5 +1,6 @@
 package me.yarhoslav.ymactors.core.actors;
 
+import java.util.Objects;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 import me.yarhoslav.ymactors.core.minds.InternalActorMind;
 import me.yarhoslav.ymactors.core.minds.IActorMind;
@@ -114,7 +115,7 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
 
             BroadcastService broadcast = new BroadcastService(minions.all());
             broadcast.send(new HighPriorityEnvelope(PoisonPill.INSTANCE, this));
-            
+
             minions.removeAll();
         }
     }
@@ -154,7 +155,7 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
     public IActorRef parent() {
         return parent;
     }
-    
+
     @Override
     public IMinions minions() {
         return minions;
@@ -164,7 +165,7 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
     public <E extends SimpleExternalActorMind> IActorRef createMinion(E pMinionMind, String pName) {
         return minions.add(pMinionMind, pName);
     }
-    
+
     private void internalErrorHandler(Exception pException) {
         //TODO: Improve error handling.
         externalMind.handleException(pException);
@@ -202,5 +203,26 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SimpleActor other = (SimpleActor) obj;
+        return Objects.equals(this.id, other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 67 * hash + Objects.hashCode(this.id);
+        return hash;
+    }
 
 }

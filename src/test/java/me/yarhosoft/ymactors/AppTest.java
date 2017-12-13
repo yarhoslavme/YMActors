@@ -1,4 +1,4 @@
-package com.yarhosoft.ymactors;
+package me.yarhosoft.ymactors;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

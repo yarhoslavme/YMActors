@@ -36,7 +36,7 @@ public final class SimpleMinions implements IMinions {
     @Override
     public IActorRef find(String pName) throws IllegalArgumentException {
         if (!minions.containsKey(pName)) {
-            throw new IllegalArgumentException(String.format("Actor Id:%s doesn't exists in Parent %s", pName, parent.name()));
+            throw new IllegalArgumentException(String.format("Actor with name:%s doesn't exists in Parent %s", pName, parent.id()));
         } else {
             return minions.get(pName);
         }
@@ -62,7 +62,7 @@ public final class SimpleMinions implements IMinions {
     }
 
     @Override
-    public Iterator all() {
+    public Iterator<SimpleActor> all() {
         return minions.values().iterator();
     }
 
