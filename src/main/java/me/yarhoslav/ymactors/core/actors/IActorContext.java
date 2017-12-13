@@ -1,5 +1,6 @@
 package me.yarhoslav.ymactors.core.actors;
 
+import me.yarhoslav.ymactors.core.actors.minions.IMinions;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 import me.yarhoslav.ymactors.core.messages.IEnvelope;
 import me.yarhoslav.ymactors.core.system.ISystem;
@@ -24,6 +25,8 @@ public interface IActorContext {
     
     public String id();
     
-    public <E extends SimpleExternalActorMind> IActorRef createMinion(E pMinionMind, String pName);
+    public IMinions minions();
+    
+    public <E extends SimpleExternalActorMind> IActorRef createMinion(E pMinionMind, String pName) throws IllegalArgumentException;
 
 }

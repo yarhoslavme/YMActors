@@ -41,7 +41,7 @@ public final class SimpleEnvelope implements IEnvelope {
 
     @Override
     public int compareTo(IEnvelope o) {
-        return Integer.compare(this.priority, o.priority());
+        return Integer.compare(o.priority(), this.priority);
     }
 
 }

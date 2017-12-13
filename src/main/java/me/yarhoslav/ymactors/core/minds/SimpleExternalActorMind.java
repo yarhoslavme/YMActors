@@ -2,6 +2,7 @@ package me.yarhoslav.ymactors.core.minds;
 
 import me.yarhoslav.ymactors.core.actors.IActorContext;
 import me.yarhoslav.ymactors.core.actors.IActorRef;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -31,6 +32,6 @@ public abstract class SimpleExternalActorMind implements IActorMind {
     public void beforeStop() throws Exception {
     }
 
-    public void handleException(Object pData, IActorRef pSender) {
+    public void handleException(Exception e) {
     }
 }

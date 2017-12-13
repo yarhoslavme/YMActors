@@ -5,16 +5,15 @@ import me.yarhoslav.ymactors.core.actors.NullActor;
 import me.yarhoslav.ymactors.core.actors.SimpleActor;
 import me.yarhoslav.ymactors.core.minds.DumbMind;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
+import me.yarhoslav.ymactors.core.messages.IEnvelope;
 
-import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import me.yarhoslav.ymactors.core.messages.IEnvelope;
+import me.yarhoslav.ymactors.core.messages.PoisonPill;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,6 @@ public final class ActorSystem implements ISystem {
     private final String name;
     private final QuantumExecutor quantumsExecutor;
     private final ScheduledExecutorService scheduler;  //TODO: Implement separate class to handle Scheduler
-    private final Map<String, IActorRef> actors;
     private final SimpleActor userSpace;
 
     //TODO: Better Name restrictions checking
@@ -41,8 +39,8 @@ public final class ActorSystem implements ISystem {
         name = pName;
         quantumsExecutor = new QuantumExecutor();
         scheduler = new ScheduledThreadPoolExecutor(1);
-        actors = new ConcurrentHashMap<>();
         userSpace = new SimpleActor("userspace", name + ":/", NullActor.INSTANCE, this, new DumbMind());
+        userSpace.start();
     }
 
     //ActorSystem API
@@ -57,54 +55,53 @@ public final class ActorSystem implements ISystem {
         }
     }
 
+    @Override
     public String name() {
         return name;
     }
 
-    public void start() {
-        //TODO: Change Status.
-    }
-
+    @Override
     public void shutdown() {
-        //TODO: Send PoisonPill to UserSpace and SystemSpace
+        userSpace.tell(PoisonPill.INSTANCE, NullActor.INSTANCE);
+        //TODO: While a few seconds before force shutdown.
+        quantumsExecutor.awaitQuiescence(10, TimeUnit.SECONDS);     
+        quantumsExecutor.shutdown();
     }
 
     //ISystem implementation
     @Override
-    public IActorRef addActor(IActorRef pActor) throws IllegalArgumentException {
-        if (actors.containsKey(pActor.id())) {
-            throw new IllegalArgumentException(String.format("Actor Id:%s already used in System %s", pActor.id(), name));
-        } else {
-            actors.put(pActor.id(), pActor);
-            return pActor;
-        }
-    }
-
-    @Override
-    public IActorRef removeActor(IActorRef pActor) throws IllegalArgumentException {
-        if (!actors.containsKey(pActor.id())) {
-            throw new IllegalArgumentException(String.format("Actor Id:%s doesn't exists in System %s", pActor.id(), name));
-        } else {
-            return actors.remove(pActor.id());
-        }
+    public <E extends SimpleExternalActorMind> IActorRef createActor(E pMinionMind, String pName) throws IllegalArgumentException {
+        return userSpace.createMinion(pMinionMind, pName);
     }
 
     @Override
     public IActorRef findActor(String pId) throws IllegalArgumentException {
-        if (!actors.containsKey(pId)) {
-            throw new IllegalArgumentException(String.format("Actor Id:%s doesn't exists in System %s", pId, name));
-        } else {
-            return actors.get(pId);
+        String tmpId = pId;
+        //TODO: Check all rules for Actor's ID.
+        if (tmpId.startsWith(name + "://")) {
+            tmpId = tmpId.substring(name.length() + ":/".length(), tmpId.length());
         }
-    }
-
-    public <E extends SimpleExternalActorMind> IActorRef createMinion(E pMinionMind, String pName) {
-        return userSpace.createMinion(pMinionMind, pName);
+        if (tmpId.startsWith("/userspace")) {
+            tmpId = tmpId.substring("/userspace".length(), tmpId.length());
+        }
+        if (tmpId.startsWith("/")) {
+            tmpId = tmpId.substring(1, tmpId.length());
+            String[] path = tmpId.split("/");
+            SimpleActor tmpActor = userSpace.minions().summon(path[0]);
+            for (int i = 1; i < path.length; i++) {
+                tmpActor = tmpActor.minions().summon(path[i]);
+            }
+            return tmpActor;
+        } else {
+            throw new IllegalArgumentException(String.format("Invalid format for Actor's Id: %s", pId));
+        }
     }
 
     public String estadistica() {
         //TODO: Fix this!!!
-        return "Actores:" + actors.size() + ". Forkjoint:" + quantumsExecutor.toString();
+        return "Actores:" + userSpace.minions().count() + ". Workers:" + quantumsExecutor.getPoolSize() + " Pending:" + quantumsExecutor.getQueuedSubmissionCount() + 
+                " En cola"
+                + ":" + quantumsExecutor.getQueuedTaskCount();
     }
 
     @Override

@@ -4,13 +4,20 @@ import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 import me.yarhoslav.ymactors.core.minds.InternalActorMind;
 import me.yarhoslav.ymactors.core.minds.IActorMind;
 import me.yarhoslav.ymactors.core.messages.IEnvelope;
+import me.yarhoslav.ymactors.core.messages.NormalPriorityEnvelope;
 import me.yarhoslav.ymactors.core.system.ISystem;
-import java.util.Queue;
+import me.yarhoslav.ymactors.core.actors.minions.IMinions;
+import me.yarhoslav.ymactors.core.actors.minions.SimpleMinions;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import me.yarhoslav.ymactors.core.messages.NormalPriorityEnvelope;
+import java.util.Queue;
+import me.yarhoslav.ymactors.core.messages.DeadMsg;
+import me.yarhoslav.ymactors.core.messages.HighPriorityEnvelope;
+import me.yarhoslav.ymactors.core.messages.PoisonPill;
+import me.yarhoslav.ymactors.core.minds.SupervisorMind;
+import me.yarhoslav.ymactors.core.services.BroadcastService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +38,14 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
     private final ISystem system;
     private final IActorMind internalMind;
     private final SimpleExternalActorMind externalMind;
+    private final IActorMind supervisorMind;
     private final Queue<IEnvelope> mailbox;
     private IEnvelope actualEnvelope;
     private final AtomicBoolean hasQuantum;
     private final AtomicBoolean isAlive;
+    private final IMinions minions;
 
-    public SimpleActor(String pName, String pAddr, IActorRef pParent, ISystem pSystem, SimpleExternalActorMind pConsious) throws IllegalArgumentException {
+    public <E extends SimpleExternalActorMind> SimpleActor(String pName, String pAddr, IActorRef pParent, ISystem pSystem, E pExternalMind) throws IllegalArgumentException {
         //TODO: Check name and addr constraints and throws Exception
         //TODO: Move Mailbox creation out of the actor to allow user changes the type of mailbox.
         name = pName;
@@ -44,11 +53,13 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
         id = addr + "/" + name;
         parent = pParent;
         system = pSystem;
-        internalMind = new InternalActorMind(this);
         mailbox = new PriorityBlockingQueue<>();
         hasQuantum = new AtomicBoolean(false);
         isAlive = new AtomicBoolean(false);
-        externalMind = pConsious;
+        internalMind = new InternalActorMind(this);
+        supervisorMind = new SupervisorMind(this);
+        externalMind = pExternalMind;
+        minions = new SimpleMinions(this, system);
     }
 
     private void requestQuantum() {
@@ -85,8 +96,7 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
             externalMind.initialize(this);
             externalMind.postStart();
         } catch (Exception e) {
-            logger.warn("An exception occurs starting actor {}.  Excetion was ignored.", name, e);
-            //TODO: Handle errors.  Put Actor in ERROR status.  Trigger ERROR procedures.
+            logger.warn("An exception occurs starting actor {}.  Stoping Actor.", name, e);
             stop();
         }
     }
@@ -99,10 +109,13 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
             //TODO: Handle errors.  Put Actor in ERROR status.  Trigger ERROR procedures.
         } finally {
             isAlive.set(false);
-            //TODO: send lost messages to System's Dead Messages Collector
             mailbox.clear();
-            //TODO: Send PoisonPill to all minions.
-            system.removeActor(this);
+            parent.tell(new HighPriorityEnvelope(DeadMsg.INSTANCE, this));
+
+            BroadcastService broadcast = new BroadcastService(minions.all());
+            broadcast.send(new HighPriorityEnvelope(PoisonPill.INSTANCE, this));
+            
+            minions.removeAll();
         }
     }
 
@@ -141,13 +154,21 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
     public IActorRef parent() {
         return parent;
     }
+    
+    @Override
+    public IMinions minions() {
+        return minions;
+    }
 
     @Override
     public <E extends SimpleExternalActorMind> IActorRef createMinion(E pMinionMind, String pName) {
-        SimpleActor tmpActor = new SimpleActor(pName, this.id, this, system, pMinionMind);
-        system.addActor(tmpActor);
-        tmpActor.start();
-        return tmpActor;
+        return minions.add(pMinionMind, pName);
+    }
+    
+    private void internalErrorHandler(Exception pException) {
+        //TODO: Improve error handling.
+        externalMind.handleException(pException);
+        stop();
     }
 
     //Callable Interface Implementation
@@ -159,10 +180,11 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
             if (actualEnvelope != null) {
                 try {
                     internalMind.process();
+                    supervisorMind.process();
                     externalMind.process();
                 } catch (Exception e) {
                     logger.warn("An exception occurs processing message {}.  Excetion was ignored.", name, e);
-                    //TODO: Handle errors.  Put Actor in ERROR status.  Trigger ERROR procedures.
+                    internalErrorHandler(e);
                 }
             }
 
@@ -179,5 +201,6 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
             return null;
         }
     }
+
 
 }
