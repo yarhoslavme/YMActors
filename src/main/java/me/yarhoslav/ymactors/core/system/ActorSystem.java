@@ -7,7 +7,6 @@ import me.yarhoslav.ymactors.core.minds.DumbMind;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 import me.yarhoslav.ymactors.core.messages.IEnvelope;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -45,7 +44,7 @@ public final class ActorSystem implements ISystem {
 
     //ActorSystem API
     @Override
-    public boolean requestQuantum(Callable pActor) {
+    public boolean requestQuantum(Runnable pActor) {
         try {
             quantumsExecutor.submit(pActor);
             return true;

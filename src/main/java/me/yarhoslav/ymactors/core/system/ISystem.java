@@ -4,7 +4,6 @@ import me.yarhoslav.ymactors.core.actors.IActorRef;
 import me.yarhoslav.ymactors.core.messages.IEnvelope;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -14,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  */
 public interface ISystem {
 
-    public boolean requestQuantum(Callable pActor);
+    public boolean requestQuantum(Runnable pActor);
 
     public String name();
 

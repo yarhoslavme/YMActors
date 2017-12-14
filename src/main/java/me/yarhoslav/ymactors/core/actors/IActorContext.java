@@ -27,6 +27,8 @@ public interface IActorContext {
     
     public IMinions minions();
     
+    public int status();
+    
     public <E extends SimpleExternalActorMind> IActorRef createMinion(E pMinionMind, String pName) throws IllegalArgumentException;
 
 }
