@@ -8,10 +8,10 @@ import me.yarhoslav.ymactors.core.messages.IEnvelope;
  */
 public final class NullActor implements IActorRef {
 
+    public static final String NAME = "NULLACTOR";
     public static final NullActor INSTANCE = new NullActor();
 
     private NullActor() {
-
     }
 
     @Override
@@ -24,7 +24,7 @@ public final class NullActor implements IActorRef {
 
     @Override
     public String name() {
-        return "NULLACTOR";
+        return NAME;
     }
 
     @Override
