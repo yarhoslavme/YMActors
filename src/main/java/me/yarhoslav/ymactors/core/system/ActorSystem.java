@@ -63,7 +63,7 @@ public final class ActorSystem implements ISystem {
     public void shutdown() {
         userSpace.tell(PoisonPill.INSTANCE, NullActor.INSTANCE);
         //TODO: While a few seconds before force shutdown.
-        quantumsExecutor.awaitQuiescence(10, TimeUnit.SECONDS);     
+        //quantumsExecutor.awaitQuiescence(10, TimeUnit.SECONDS);     
         quantumsExecutor.shutdown();
     }
 

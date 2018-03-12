@@ -14,9 +14,7 @@ import me.yarhoslav.ymactors.core.messages.PoisonPill;
 import me.yarhoslav.ymactors.core.services.BroadcastService;
 import me.yarhoslav.ymactors.core.system.ISystem;
 
-import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.Queue;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,7 +25,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author yarhoslavme
  */
-public final class SimpleActor implements IActorRef, Runnable, IActorContext {
+public final class SimpleActor implements IActorRef, IActorContext {
 
     public static final int ALIVE = 0;
     public static final int STARTING = 1;
@@ -49,10 +47,10 @@ public final class SimpleActor implements IActorRef, Runnable, IActorContext {
     private final IActorMind internalMind;
     private final SimpleExternalActorMind externalMind;
     private final IActorMind supervisorMind;
-    private final Queue<IEnvelope> mailbox;
     private IEnvelope actualEnvelope;
     private final AtomicInteger internalStatus;
     private final AtomicBoolean hasQuantum;
+    private final Worker worker;
 
     public <E extends SimpleExternalActorMind> SimpleActor(String pName, String pAddr, IActorRef pParent, ISystem pSystem, E pExternalMind) throws IllegalArgumentException {
         //TODO: Check name and addr constraints and throws Exception
@@ -62,24 +60,13 @@ public final class SimpleActor implements IActorRef, Runnable, IActorContext {
         id = addr + "/" + name;
         parent = pParent;
         system = pSystem;
-        mailbox = new PriorityBlockingQueue<>();
         internalMind = new InternalActorMind(this);
         supervisorMind = new SupervisorMind(this);
         externalMind = pExternalMind;
         minions = new SimpleMinions(this, system);
         internalStatus = new AtomicInteger(ALIVE);
         hasQuantum = new AtomicBoolean(false);
-    }
-
-    private void requestQuantum() {
-        //TODO: Check error
-        if (!hasQuantum.get()) {
-            boolean quantumAccepted = system.requestQuantum(this);
-            hasQuantum.set(quantumAccepted);
-            if (!quantumAccepted) {
-                internalErrorHandler(new IllegalStateException(String.format("Quantum executor system %s has denied allocation of a new task for Actor %s", system.name(), id)));
-            }
-        }
+        worker = new Worker();
     }
 
     //SimpleActor API
@@ -93,8 +80,8 @@ public final class SimpleActor implements IActorRef, Runnable, IActorContext {
     public void tell(IEnvelope pEnvelope) {
         int actualStatus = internalStatus.get();
         if ((actualStatus == RUNNING) || (actualStatus == CLOSING)) {
-            mailbox.offer(pEnvelope);
-            requestQuantum();
+            //TODO: Call Worker.
+            worker.newMessage(pEnvelope);
         }
     }
 
@@ -118,7 +105,7 @@ public final class SimpleActor implements IActorRef, Runnable, IActorContext {
             logger.warn("An exception occurs stopping actor {}.  Excetion was ignored.", name, e);
             //TODO: Handle errors.  Put Actor in ERROR internalStatus.  Trigger ERROR procedures.
         } finally {
-            mailbox.clear();
+            worker.stop();
             parent.tell(new HighPriorityEnvelope(DeadMsg.INSTANCE, this));
 
             BroadcastService broadcast = new BroadcastService(minions.all());
@@ -197,21 +184,6 @@ public final class SimpleActor implements IActorRef, Runnable, IActorContext {
             } catch (Exception e) {
                 logger.warn("An exception occurs processing message {}.  Excetion was ignored.", name, e);
                 internalErrorHandler(e);
-            }
-        }
-    }
-
-    //Callable Interface Implementation
-    @Override
-    public void run() {
-        actualEnvelope = mailbox.poll();
-        runningState();
-
-        int actualStatus = internalStatus.get();
-        if ((actualStatus == RUNNING) || (actualStatus == CLOSING)) {
-            hasQuantum.set(false);
-            if (!mailbox.isEmpty()) {
-                requestQuantum();
             }
         }
     }
