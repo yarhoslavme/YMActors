@@ -6,13 +6,9 @@ import me.yarhoslav.ymactors.core.messages.IEnvelope;
  *
  * @author yarhoslavme
  */
-public interface IWorker {
+public interface IWorker extends Runnable {
 
     public void newMessage(IEnvelope pEnvelope);
 
     public void stop();
-
-    public void taskDone();
-
-    public void execute();
 }

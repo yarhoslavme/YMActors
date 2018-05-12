@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  */
 public interface ISystem {
 
-    public boolean requestQuantum(Runnable pActor);
+    public boolean requestQuantum(int pDispatcher, Runnable pActor);
 
     public String name();
 
@@ -28,4 +28,6 @@ public interface ISystem {
     public ScheduledFuture scheduleAtFixedRate(IActorRef pReceiver, IEnvelope pEnvelope, long initialDelay, long period, TimeUnit timeunit);
 
     public ScheduledFuture scheduleWithFixedDelay(IActorRef pReceiver, IEnvelope pEnvelope, long initialDelay, long period, TimeUnit timeunit);
+    
+    public int getDispatcher();
 }

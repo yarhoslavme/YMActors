@@ -26,7 +26,7 @@ public final class ActorSystem implements ISystem {
     private final Logger logger = LoggerFactory.getLogger(ActorSystem.class);
 
     private final String name;
-    private final QuantumExecutor quantumsExecutor;
+    private final IQuantumExecutor quantumsManager;
     private final ScheduledExecutorService scheduler;  //TODO: Implement separate class to handle Scheduler
     private final SimpleActor userSpace;
 
@@ -36,7 +36,7 @@ public final class ActorSystem implements ISystem {
             throw new IllegalArgumentException("ActorSystem's name can't be blank");
         }
         name = pName;
-        quantumsExecutor = new QuantumExecutor();
+        quantumsManager = new QuantumExecutor();
         scheduler = new ScheduledThreadPoolExecutor(1);
         userSpace = new SimpleActor("userspace", name + ":/", NullActor.INSTANCE, this, new DumbMind());
         userSpace.start();
@@ -44,9 +44,9 @@ public final class ActorSystem implements ISystem {
 
     //ActorSystem API
     @Override
-    public boolean requestQuantum(Runnable pActor) {
+    public boolean requestQuantum(int pDispatcher, Runnable pActor) {
         try {
-            quantumsExecutor.submit(pActor);
+            quantumsManager.submitTask(pDispatcher, pActor);
             return true;
         } catch (RejectedExecutionException | NullPointerException ex) {
             logger.warn("Failed submitting new task to Quantum Executor {}.  Exception ignored.", pActor, ex);
@@ -64,7 +64,7 @@ public final class ActorSystem implements ISystem {
         userSpace.tell(PoisonPill.INSTANCE, NullActor.INSTANCE);
         //TODO: While a few seconds before force shutdown.
         //quantumsExecutor.awaitQuiescence(10, TimeUnit.SECONDS);     
-        quantumsExecutor.shutdown();
+        quantumsManager.shutdown();
     }
 
     //ISystem implementation
@@ -98,9 +98,12 @@ public final class ActorSystem implements ISystem {
 
     public String estadistica() {
         //TODO: Fix this!!!
+        /*
         return "Actores:" + userSpace.minions().count() + ". Workers:" + quantumsExecutor.getPoolSize() + " Pending:" + quantumsExecutor.getQueuedSubmissionCount() + 
                 " En cola"
                 + ":" + quantumsExecutor.getQueuedTaskCount();
+*/
+        return "TODO...";
     }
 
     @Override
@@ -124,6 +127,11 @@ public final class ActorSystem implements ISystem {
                 initialDelay,
                 period,
                 timeunit);
+    }
+
+    @Override
+    public int getDispatcher() {
+        return quantumsManager.getDispatcher();
     }
 
 }

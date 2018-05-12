@@ -51,6 +51,7 @@ public final class SimpleActor implements IActorRef, IActorContext {
     private final AtomicInteger internalStatus;
     private final AtomicBoolean hasQuantum;
     private final Worker worker;
+    private final int dispatcher;
 
     public <E extends SimpleExternalActorMind> SimpleActor(String pName, String pAddr, IActorRef pParent, ISystem pSystem, E pExternalMind) throws IllegalArgumentException {
         //TODO: Check name and addr constraints and throws Exception
@@ -66,7 +67,8 @@ public final class SimpleActor implements IActorRef, IActorContext {
         minions = new SimpleMinions(this, system);
         internalStatus = new AtomicInteger(ALIVE);
         hasQuantum = new AtomicBoolean(false);
-        worker = new Worker();
+        worker = new Worker(this); //TODO: Context must be a separate object from SimpleActor
+        dispatcher = system.getDispatcher();
     }
 
     //SimpleActor API
@@ -166,6 +168,11 @@ public final class SimpleActor implements IActorRef, IActorContext {
     public <E extends SimpleExternalActorMind> IActorRef createMinion(E pMinionMind, String pName) {
         return minions.add(pMinionMind, pName);
     }
+    
+    @Override
+    public int dispatcher() {
+        return dispatcher;
+    }
 
     private void internalErrorHandler(Exception pException) {
         //TODO: Improve error handling.
@@ -174,7 +181,9 @@ public final class SimpleActor implements IActorRef, IActorContext {
         stop();
     }
 
-    private void runningState() {
+    @Override
+    public void think(IEnvelope pEnvelope) {
+        actualEnvelope = pEnvelope;
         //TODO: Total execution time + Last execution time (En una estructura que devuelve varios valores).  Ver si es interna del SimpleActor.
         if (actualEnvelope != null) {
             try {
