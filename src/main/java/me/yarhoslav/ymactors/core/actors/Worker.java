@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Worker implements IWorker {
     
-    private final Logger logger = LoggerFactory.getLogger(SimpleActor.class);
+    private final Logger logger = LoggerFactory.getLogger(Worker.class);
 
     public static final int IDLE = 0;
     public static final int WAITING = 1;
