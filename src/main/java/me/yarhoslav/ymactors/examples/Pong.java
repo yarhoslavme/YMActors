@@ -24,9 +24,9 @@ public class Pong extends SimpleExternalActorMind {
         counter++;
 
         String msg = (String) context().envelope().message();
-        //logger.info(msg);
+        logger.info(msg);
 
-        if (counter >= 150000*5) {
+        if (counter >= 40000*5) {
             context().myself().tell(PoisonPill.INSTANCE, context().myself());
             stop = System.currentTimeMillis();
             logger.info("Mensaje POISONPILL, contador {} en {} milis", counter, stop - start);
