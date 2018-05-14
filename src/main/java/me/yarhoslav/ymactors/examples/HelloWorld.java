@@ -14,7 +14,7 @@ public class HelloWorld extends SimpleExternalActorMind {
     @Override
     public void process() throws Exception {
         String msg = (String) context().envelope().message();
-        logger.info(msg);
+        logger.info("Mensaje {}", msg);
 
         if (msg.equals("Hello")) {
             context().myself().tell("World", context().myself());
