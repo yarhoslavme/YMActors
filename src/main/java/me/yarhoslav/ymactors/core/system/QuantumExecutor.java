@@ -2,6 +2,7 @@ package me.yarhoslav.ymactors.core.system;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -32,7 +33,7 @@ public class QuantumExecutor implements IQuantumExecutor {
     }
 
     @Override
-    public void submitTask(int pDispatcher, Runnable pTask) {
+    public void submitTask(int pDispatcher, Runnable pTask) throws RejectedExecutionException, NullPointerException {
         executors[pDispatcher].submit(pTask);
     }
 
