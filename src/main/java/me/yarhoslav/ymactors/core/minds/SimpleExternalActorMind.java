@@ -1,7 +1,6 @@
 package me.yarhoslav.ymactors.core.minds;
 
 import me.yarhoslav.ymactors.core.actors.IActorContext;
-import me.yarhoslav.ymactors.core.actors.IActorRef;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

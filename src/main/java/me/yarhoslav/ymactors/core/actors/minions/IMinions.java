@@ -20,7 +20,7 @@ public interface IMinions {
 
     public IActorRef remove(IActorRef pMinion) throws IllegalArgumentException;
 
-    public Iterator all();
+    public Iterator<SimpleActor> all();
 
     public void removeAll();
     

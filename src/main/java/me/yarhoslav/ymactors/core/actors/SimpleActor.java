@@ -1,23 +1,22 @@
 package me.yarhoslav.ymactors.core.actors;
 
+import me.yarhoslav.ymactors.core.actors.minions.IMinions;
+import me.yarhoslav.ymactors.core.actors.minions.SimpleMinions;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 import me.yarhoslav.ymactors.core.minds.InternalActorMind;
 import me.yarhoslav.ymactors.core.minds.IActorMind;
+import me.yarhoslav.ymactors.core.minds.SupervisorMind;
 import me.yarhoslav.ymactors.core.messages.IEnvelope;
 import me.yarhoslav.ymactors.core.messages.NormalPriorityEnvelope;
-import me.yarhoslav.ymactors.core.system.ISystem;
-import me.yarhoslav.ymactors.core.actors.minions.IMinions;
-import me.yarhoslav.ymactors.core.actors.minions.SimpleMinions;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.Queue;
 import me.yarhoslav.ymactors.core.messages.DeadMsg;
 import me.yarhoslav.ymactors.core.messages.HighPriorityEnvelope;
 import me.yarhoslav.ymactors.core.messages.PoisonPill;
-import me.yarhoslav.ymactors.core.minds.SupervisorMind;
 import me.yarhoslav.ymactors.core.services.BroadcastService;
+import me.yarhoslav.ymactors.core.system.ISystem;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +25,15 @@ import org.slf4j.LoggerFactory;
  *
  * @author yarhoslavme
  */
-public final class SimpleActor implements IActorRef, Callable, IActorContext {
+public final class SimpleActor implements IActorRef, IActorContext {
+
+    public static final int ALIVE = 0;
+    public static final int STARTING = 1;
+    public static final int RUNNING = 2;
+    public static final int CLOSING = 3;
+    public static final int DYING = 5;
+    public static final int DEAD = 6;
+    public static final int ERROR = -1;
 
     private final Logger logger = LoggerFactory.getLogger(SimpleActor.class);
 
@@ -35,15 +42,16 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
     private final String addr;
     private final String id;
     private final IActorRef parent;
+    private final IMinions minions;
     private final ISystem system;
     private final IActorMind internalMind;
     private final SimpleExternalActorMind externalMind;
     private final IActorMind supervisorMind;
-    private final Queue<IEnvelope> mailbox;
     private IEnvelope actualEnvelope;
+    private final AtomicInteger internalStatus;
     private final AtomicBoolean hasQuantum;
-    private final AtomicBoolean isAlive;
-    private final IMinions minions;
+    private final Worker worker;
+    private final int dispatcher;
 
     public <E extends SimpleExternalActorMind> SimpleActor(String pName, String pAddr, IActorRef pParent, ISystem pSystem, E pExternalMind) throws IllegalArgumentException {
         //TODO: Check name and addr constraints and throws Exception
@@ -53,48 +61,38 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
         id = addr + "/" + name;
         parent = pParent;
         system = pSystem;
-        mailbox = new PriorityBlockingQueue<>();
-        hasQuantum = new AtomicBoolean(false);
-        isAlive = new AtomicBoolean(false);
         internalMind = new InternalActorMind(this);
         supervisorMind = new SupervisorMind(this);
         externalMind = pExternalMind;
         minions = new SimpleMinions(this, system);
-    }
-
-    private void requestQuantum() {
-        hasQuantum.set(system.requestQuantum(this));
+        internalStatus = new AtomicInteger(ALIVE);
+        hasQuantum = new AtomicBoolean(false);
+        worker = new Worker(this); //TODO: Context must be a separate object from SimpleActor
+        dispatcher = system.getDispatcher();
     }
 
     //SimpleActor API
     //IActorRef Interface Implementation
     @Override
     public void tell(Object pData, IActorRef pSender) {
-        if (!isAlive.get()) {
-            return;
-        }
-        mailbox.offer(new NormalPriorityEnvelope(pData, pSender));
-        if (!hasQuantum.get()) {
-            requestQuantum();
-        }
+        tell(new NormalPriorityEnvelope(pData, pSender));
     }
 
     @Override
     public void tell(IEnvelope pEnvelope) {
-        if (!isAlive.get()) {
-            return;
-        }
-        mailbox.offer(pEnvelope);
-        if (!hasQuantum.get()) {
-            requestQuantum();
+        int actualStatus = internalStatus.get();
+        if ((actualStatus == RUNNING) || (actualStatus == CLOSING)) {
+            //TODO: Call Worker.
+            worker.newMessage(pEnvelope);
         }
     }
 
     public final void start() {
-        isAlive.set(true);
+        internalStatus.set(STARTING);
         try {
             externalMind.initialize(this);
             externalMind.postStart();
+            internalStatus.set(RUNNING);
         } catch (Exception e) {
             logger.warn("An exception occurs starting actor {}.  Stoping Actor.", name, e);
             stop();
@@ -102,20 +100,21 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
     }
 
     public final void stop() {
+        internalStatus.set(DYING);
         try {
             externalMind.beforeStop();
         } catch (Exception e) {
             logger.warn("An exception occurs stopping actor {}.  Excetion was ignored.", name, e);
-            //TODO: Handle errors.  Put Actor in ERROR status.  Trigger ERROR procedures.
+            //TODO: Handle errors.  Put Actor in ERROR internalStatus.  Trigger ERROR procedures.
         } finally {
-            isAlive.set(false);
-            mailbox.clear();
+            worker.stop();
             parent.tell(new HighPriorityEnvelope(DeadMsg.INSTANCE, this));
 
             BroadcastService broadcast = new BroadcastService(minions.all());
             broadcast.send(new HighPriorityEnvelope(PoisonPill.INSTANCE, this));
-            
+
             minions.removeAll();
+            internalStatus.set(DEAD);
         }
     }
 
@@ -154,10 +153,15 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
     public IActorRef parent() {
         return parent;
     }
-    
+
     @Override
     public IMinions minions() {
         return minions;
+    }
+
+    @Override
+    public int status() {
+        return internalStatus.get();
     }
 
     @Override
@@ -165,42 +169,54 @@ public final class SimpleActor implements IActorRef, Callable, IActorContext {
         return minions.add(pMinionMind, pName);
     }
     
+    @Override
+    public int dispatcher() {
+        return dispatcher;
+    }
+
     private void internalErrorHandler(Exception pException) {
         //TODO: Improve error handling.
+        internalStatus.set(ERROR);
         externalMind.handleException(pException);
         stop();
     }
 
-    //Callable Interface Implementation
     @Override
-    public Object call() throws Exception {
-        if (isAlive.get()) {
-            //TODO: Allow multiple messages in the same quantum?
-            actualEnvelope = mailbox.poll();
-            if (actualEnvelope != null) {
-                try {
-                    internalMind.process();
-                    supervisorMind.process();
-                    externalMind.process();
-                } catch (Exception e) {
-                    logger.warn("An exception occurs processing message {}.  Excetion was ignored.", name, e);
-                    internalErrorHandler(e);
-                }
+    public void think(IEnvelope pEnvelope) {
+        actualEnvelope = pEnvelope;
+        //TODO: Total execution time + Last execution time (En una estructura que devuelve varios valores).  Ver si es interna del SimpleActor.
+        if (actualEnvelope != null) {
+            try {
+                internalMind.process();
+                supervisorMind.process();
+                externalMind.process();
+            } catch (Exception e) {
+                logger.warn("An exception occurs processing message {}.  Excetion was ignored.", name, e);
+                internalErrorHandler(e);
             }
-
-            if (!mailbox.isEmpty()) {
-                requestQuantum();
-            } else {
-                hasQuantum.set(false);
-            }
-
-            //TODO: Validate the returned value
-            //TODO: maybe execution time?. or counter of quantums executed?. or some complex status info?
-            return null;
-        } else {
-            return null;
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SimpleActor other = (SimpleActor) obj;
+        return Objects.equals(this.id, other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 67 * hash + Objects.hashCode(this.id);
+        return hash;
+    }
 
 }

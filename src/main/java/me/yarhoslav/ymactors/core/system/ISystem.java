@@ -4,7 +4,6 @@ import me.yarhoslav.ymactors.core.actors.IActorRef;
 import me.yarhoslav.ymactors.core.messages.IEnvelope;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -14,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  */
 public interface ISystem {
 
-    public boolean requestQuantum(Callable pActor);
+    public boolean requestQuantum(int pDispatcher, Runnable pActor);
 
     public String name();
 
@@ -29,4 +28,6 @@ public interface ISystem {
     public ScheduledFuture scheduleAtFixedRate(IActorRef pReceiver, IEnvelope pEnvelope, long initialDelay, long period, TimeUnit timeunit);
 
     public ScheduledFuture scheduleWithFixedDelay(IActorRef pReceiver, IEnvelope pEnvelope, long initialDelay, long period, TimeUnit timeunit);
+    
+    public int getDispatcher();
 }
