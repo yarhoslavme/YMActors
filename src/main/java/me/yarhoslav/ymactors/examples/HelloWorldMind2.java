@@ -9,15 +9,15 @@ import org.slf4j.LoggerFactory;
  *
  * @author manjaro
  */
-public class HelloWorld2 extends SimpleExternalActorMind {
+public class HelloWorldMind2 extends SimpleExternalActorMind {
 
     long counter = 0;
     long start = System.currentTimeMillis();
     long stop = 0;
-    private final Logger logger = LoggerFactory.getLogger(HelloWorld2.class);
+    private final Logger logger = LoggerFactory.getLogger(HelloWorldMind2.class);
 
     @Override
-    public void process() throws Exception {
+    public void process() {
         if (!(context().envelope().message() instanceof String)) {
             return;
         }

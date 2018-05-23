@@ -12,7 +12,7 @@ public class Example2 {
     
     /* Hello world */
     ISystem system = new ActorSystem("DEMO");
-    IActorRef hello = system.createActor(new HelloWorld2(), "HELLOWORLD");
+    IActorRef hello = system.createActor(new HelloWorldMind2(), "HELLOWORLD");
 
     public static void main(String[] args) {
         // TODO code application logic here

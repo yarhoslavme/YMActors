@@ -8,11 +8,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author manjaro
  */
-public class HelloWorld extends SimpleExternalActorMind {
-    private final Logger logger = LoggerFactory.getLogger(HelloWorld.class);
+public class HelloWorldMind extends SimpleExternalActorMind {
+    private final Logger logger = LoggerFactory.getLogger(HelloWorldMind.class);
 
     @Override
-    public void process() throws Exception {
+    public void process() {
         String msg = (String) context().envelope().message();
         logger.info("Mensaje {}", msg);
 
