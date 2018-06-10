@@ -1,10 +1,11 @@
 # YMActors
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/me.yarhoslav/YMActors/badge.svg)](https://maven-badges.herokuapp.com/maven-central/me.yarhoslav/YMActors)
 [![GitHub version](https://badge.fury.io/gh/yarhoslavme%2FYMActors.svg)](https://badge.fury.io/gh/yarhoslavme%2FYMActors)
 [![Travis CI](https://travis-ci.org/yarhoslavme/YMActors.svg?branch=master)](https://travis-ci.org/yarhoslavme/YMActors)
-[![Join the chat at https://gitter.im/YMActors/Lobby](https://badges.gitter.im/YMActors/Lobby.svg)](https://gitter.im/YMActors/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/me.yarhoslav/YMActors/badge.svg)](https://maven-badges.herokuapp.com/maven-central/me.yarhoslav/YMActors)
 [![Coverage Status](https://coveralls.io/repos/github/yarhoslavme/YMActors/badge.svg?branch=master)](https://coveralls.io/github/yarhoslavme/YMActors?branch=master)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/fb4336d954a046859cf8df34f738a52a)](https://www.codacy.com/app/yarhoslavme/YMActors?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=yarhoslavme/YMActors&amp;utm_campaign=Badge_Grade)
+[![Join the chat at https://gitter.im/YMActors/Lobby](https://badges.gitter.im/YMActors/Lobby.svg)](https://gitter.im/YMActors/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Actors framework for Java
 
