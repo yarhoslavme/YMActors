@@ -116,7 +116,7 @@ Check [this](https://mvnrepository.com/artifact/me.yarhoslav/YMActors/0.2.2) gen
 
 #### Wiki
 
-Comming soon.
+Comming soon...
 
 #### Blog
 
