@@ -18,17 +18,11 @@ public interface IActorContext {
 
     IEnvelope envelope();
 
-    String name();
-
-    String address();
-
-    String id();
-
     IMinions minions();
 
     int status();
 
-    <E extends SimpleExternalActorMind> IActorRef createMinion(E pMinionMind, String pName) throws IllegalArgumentException;
+    <E extends SimpleExternalActorMind> IActorRef createActor(E pMinionMind, String pName) throws IllegalArgumentException;
 
     void think(IEnvelope pEnvelope);
 

@@ -67,7 +67,7 @@ public class Worker implements IWorker {
         //TODO: Check error
         boolean quantumAccepted = context.system().requestQuantum(context.dispatcher(), this);
         if (!quantumAccepted) {
-            internalErrorHandler(new IllegalStateException(String.format("Quantum executor system %s has denied allocation of a new task for Actor %s", context.system().name(), context.id())));
+            internalErrorHandler(new IllegalStateException(String.format("Quantum executor system %s has denied allocation of a new task for Actor %s", context.system().name(), context.myself().addr())));
         }
     }
 

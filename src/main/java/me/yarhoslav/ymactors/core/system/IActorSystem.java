@@ -4,6 +4,7 @@ import me.yarhoslav.ymactors.core.actors.IActorRef;
 import me.yarhoslav.ymactors.core.messages.IEnvelope;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 
+import java.util.Iterator;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -18,9 +19,15 @@ public interface IActorSystem {
 
     void shutdown();
 
-    IActorRef findActor(String pId) throws IllegalArgumentException;
+    IActorRef findActor(String pAddr) throws IllegalArgumentException;
+
+    Iterator<IActorRef> findActors(String pAddr);
 
     <E extends SimpleExternalActorMind> IActorRef createActor(E pMinionMind, String pName) throws IllegalArgumentException;
+
+    IActorRef addActor(IActorRef pActor) throws IllegalArgumentException;
+
+    IActorRef removeActor(IActorRef pActor);
 
     ScheduledFuture schedule(IActorRef pReceiver, IEnvelope pEnvelope, long delay, TimeUnit timeunit);
 

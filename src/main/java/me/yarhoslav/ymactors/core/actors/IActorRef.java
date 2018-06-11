@@ -14,7 +14,5 @@ public interface IActorRef {
 
     String name();
 
-    String address();
-
-    String id();
+    String addr();
 }

@@ -10,7 +10,14 @@ import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.*;
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author yarhoslavme
@@ -22,6 +29,7 @@ public final class SimpleActorSystem implements IActorSystem {
     private final IQuantumExecutor quantumsManager;
     private final ScheduledExecutorService scheduler;  //TODO: Implement separate class to handle Scheduler
     private final SimpleActor userSpace;
+    private final ConcurrentNavigableMap<String, IActorRef> population;
 
     //TODO: Better Name restrictions checking
     public SimpleActorSystem(String pName) {
@@ -31,8 +39,9 @@ public final class SimpleActorSystem implements IActorSystem {
         name = pName;
         quantumsManager = new QuantumExecutor();
         scheduler = new ScheduledThreadPoolExecutor(1);
-        userSpace = new SimpleActor("userspace", name + ":/", NullActor.INSTANCE, this, new DumbMind());
+        userSpace = new SimpleActor("userspace", NullActor.INSTANCE, this, new DumbMind());
         userSpace.start();
+        population = new ConcurrentSkipListMap<>();
     }
 
     //SimpleActorSystem API
@@ -63,31 +72,41 @@ public final class SimpleActorSystem implements IActorSystem {
     //IActorSystem implementation
     @Override
     public <E extends SimpleExternalActorMind> IActorRef createActor(E pMinionMind, String pName) throws IllegalArgumentException {
-        return userSpace.createMinion(pMinionMind, pName);
+        IActorRef tempActor = userSpace.createActor(pMinionMind, pName);
+        return addActor(tempActor);
     }
 
     @Override
-    public IActorRef findActor(String pId) throws IllegalArgumentException {
-        String tmpId = pId;
-        //TODO: Check all rules for Actor's ID.
-        if (tmpId.startsWith(name + "://")) {
-            tmpId = tmpId.substring(name.length() + ":/".length(), tmpId.length());
+    public IActorRef addActor(IActorRef pActor) throws IllegalArgumentException {
+        if (!population.containsKey(pActor.addr())) {
+            throw new IllegalArgumentException(String.format("Actor %s already exists in System %s", pActor.addr(), name));
         }
-        if (tmpId.startsWith("/userspace")) {
-            tmpId = tmpId.substring("/userspace".length(), tmpId.length());
-        }
-        if (tmpId.startsWith("/")) {
-            tmpId = tmpId.substring(1, tmpId.length());
-            String[] path = tmpId.split("/");
-            SimpleActor tmpActor = userSpace.minions().summon(path[0]);
-            for (int i = 1; i < path.length; i++) {
-                tmpActor = tmpActor.minions().summon(path[i]);
-            }
-            return tmpActor;
-        } else {
-            throw new IllegalArgumentException(String.format("Invalid Actor's ID: %s", pId));
-        }
+
+        return population.putIfAbsent(pActor.addr(), pActor);
     }
+
+    @Override
+    public IActorRef removeActor(IActorRef pActor) {
+
+        return population.remove(pActor.addr());
+    }
+
+    @Override
+    public IActorRef findActor(String pAddr) throws IllegalArgumentException {
+        if (!population.containsKey(pAddr)) {
+            throw new IllegalArgumentException(String.format("Actor %s does not exists in System %s", pAddr, name));
+        }
+
+        return population.get(pAddr);
+    }
+
+    @Override
+    public Iterator<IActorRef> findActors(String pAddr) {
+
+
+        return population.headMap(pAddr + "/").values().iterator();
+    }
+
 
     public String estadistica() {
         //TODO: Fix this!!!
