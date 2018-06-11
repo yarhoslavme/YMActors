@@ -13,22 +13,20 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.*;
 
 /**
- *
  * @author yarhoslavme
  */
-public final class ActorSystem implements ISystem {
+public final class SimpleActorSystem implements IActorSystem {
 
-    private final Logger logger = LoggerFactory.getLogger(ActorSystem.class);
-
+    private final Logger logger = LoggerFactory.getLogger(SimpleActorSystem.class);
     private final String name;
     private final IQuantumExecutor quantumsManager;
     private final ScheduledExecutorService scheduler;  //TODO: Implement separate class to handle Scheduler
     private final SimpleActor userSpace;
 
     //TODO: Better Name restrictions checking
-    public ActorSystem(String pName) {
+    public SimpleActorSystem(String pName) {
         if (pName.length() <= 0) {
-            throw new IllegalArgumentException("ActorSystem's name can't be blank");
+            throw new IllegalArgumentException("SimpleActorSystem's name can't be blank");
         }
         name = pName;
         quantumsManager = new QuantumExecutor();
@@ -37,7 +35,7 @@ public final class ActorSystem implements ISystem {
         userSpace.start();
     }
 
-    //ActorSystem API
+    //SimpleActorSystem API
     @Override
     public boolean requestQuantum(int pDispatcher, Runnable pActor) {
         try {
@@ -62,7 +60,7 @@ public final class ActorSystem implements ISystem {
         quantumsManager.shutdown();
     }
 
-    //ISystem implementation
+    //IActorSystem implementation
     @Override
     public <E extends SimpleExternalActorMind> IActorRef createActor(E pMinionMind, String pName) throws IllegalArgumentException {
         return userSpace.createMinion(pMinionMind, pName);

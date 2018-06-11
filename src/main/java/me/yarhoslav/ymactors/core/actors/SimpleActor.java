@@ -8,7 +8,7 @@ import me.yarhoslav.ymactors.core.minds.InternalActorMind;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 import me.yarhoslav.ymactors.core.minds.SupervisorMind;
 import me.yarhoslav.ymactors.core.services.BroadcastService;
-import me.yarhoslav.ymactors.core.system.ISystem;
+import me.yarhoslav.ymactors.core.system.IActorSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,7 @@ public final class SimpleActor implements IActorRef, IActorContext {
     private final String id;
     private final IActorRef parent;
     private final IMinions minions;
-    private final ISystem system;
+    private final IActorSystem system;
     private final IActorMind internalMind;
     private final SimpleExternalActorMind externalMind;
     private final IActorMind supervisorMind;
@@ -46,7 +46,7 @@ public final class SimpleActor implements IActorRef, IActorContext {
     private final Worker worker;
     private final int dispatcher;
 
-    public <E extends SimpleExternalActorMind> SimpleActor(String pName, String pAddr, IActorRef pParent, ISystem pSystem, E pExternalMind) throws IllegalArgumentException {
+    public <E extends SimpleExternalActorMind> SimpleActor(String pName, String pAddr, IActorRef pParent, IActorSystem pSystem, E pExternalMind) throws IllegalArgumentException {
         //TODO: Check name and addr constraints and throws Exception
         //TODO: Move Mailbox creation out of the actor to allow user changes the type of mailbox.
         name = pName;
@@ -132,7 +132,7 @@ public final class SimpleActor implements IActorRef, IActorContext {
     }
 
     @Override
-    public ISystem system() {
+    public IActorSystem system() {
         return system;
     }
 

@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author yarhoslavme
  */
-public interface ISystem {
+public interface IActorSystem {
 
     boolean requestQuantum(int pDispatcher, Runnable pActor);
 

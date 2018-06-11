@@ -3,7 +3,7 @@ package me.yarhoslav.ymactors.core.actors;
 import me.yarhoslav.ymactors.core.actors.minions.IMinions;
 import me.yarhoslav.ymactors.core.messages.IEnvelope;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
-import me.yarhoslav.ymactors.core.system.ISystem;
+import me.yarhoslav.ymactors.core.system.IActorSystem;
 
 /**
  * @author yarhoslavme
@@ -12,7 +12,7 @@ public interface IActorContext {
 
     IActorRef myself();
 
-    ISystem system();
+    IActorSystem system();
 
     IActorRef parent();
 

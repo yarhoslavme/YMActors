@@ -3,11 +3,11 @@ package me.yarhoslav.ymactors.core.actors.minions;
 import me.yarhoslav.ymactors.core.actors.IActorRef;
 import me.yarhoslav.ymactors.core.actors.SimpleActor;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
-import me.yarhoslav.ymactors.core.system.ISystem;
+import me.yarhoslav.ymactors.core.system.IActorSystem;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.Iterator;
 
 /**
  *
@@ -17,9 +17,9 @@ public final class SimpleMinions implements IMinions {
 
     private final Map<String, SimpleActor> minions;
     private final IActorRef parent;
-    private final ISystem system;
+    private final IActorSystem system;
 
-    public SimpleMinions(IActorRef pParent, ISystem pSystem) {
+    public SimpleMinions(IActorRef pParent, IActorSystem pSystem) {
         minions = new ConcurrentHashMap<>();
         parent = pParent;
         system = pSystem;

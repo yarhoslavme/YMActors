@@ -15,18 +15,21 @@
  */
 package me.yarhoslav.ymactors.core.actors.minions;
 
-import java.util.Iterator;
 import me.yarhoslav.ymactors.core.actors.IActorRef;
 import me.yarhoslav.ymactors.core.actors.NullActor;
 import me.yarhoslav.ymactors.core.actors.SimpleActor;
 import me.yarhoslav.ymactors.core.minds.DumbMind;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
-import me.yarhoslav.ymactors.core.system.ActorSystem;
-import me.yarhoslav.ymactors.core.system.ISystem;
+import me.yarhoslav.ymactors.core.system.IActorSystem;
+import me.yarhoslav.ymactors.core.system.SimpleActorSystem;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.util.Iterator;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -34,7 +37,7 @@ import static org.junit.Assert.*;
  */
 public class SimpleMinionsTest {
 
-    private ISystem system;
+    private IActorSystem system;
     private SimpleExternalActorMind minionMind;
     private SimpleMinions instance;
 
@@ -43,7 +46,7 @@ public class SimpleMinionsTest {
 
     @Before
     public void setUp() {
-        system = new ActorSystem("TEST-ACTORSYSTEM");
+        system = new SimpleActorSystem("TEST-ACTORSYSTEM");
         minionMind = new DumbMind();
         instance = new SimpleMinions(NullActor.INSTANCE, system);
 
