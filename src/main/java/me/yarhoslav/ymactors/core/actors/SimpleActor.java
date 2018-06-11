@@ -2,24 +2,18 @@ package me.yarhoslav.ymactors.core.actors;
 
 import me.yarhoslav.ymactors.core.actors.minions.IMinions;
 import me.yarhoslav.ymactors.core.actors.minions.SimpleMinions;
-import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
-import me.yarhoslav.ymactors.core.minds.InternalActorMind;
+import me.yarhoslav.ymactors.core.messages.*;
 import me.yarhoslav.ymactors.core.minds.IActorMind;
+import me.yarhoslav.ymactors.core.minds.InternalActorMind;
+import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 import me.yarhoslav.ymactors.core.minds.SupervisorMind;
-import me.yarhoslav.ymactors.core.messages.IEnvelope;
-import me.yarhoslav.ymactors.core.messages.NormalPriorityEnvelope;
-import me.yarhoslav.ymactors.core.messages.DeadMsg;
-import me.yarhoslav.ymactors.core.messages.HighPriorityEnvelope;
-import me.yarhoslav.ymactors.core.messages.PoisonPill;
 import me.yarhoslav.ymactors.core.services.BroadcastService;
 import me.yarhoslav.ymactors.core.system.ISystem;
-
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -49,7 +43,6 @@ public final class SimpleActor implements IActorRef, IActorContext {
     private final IActorMind supervisorMind;
     private IEnvelope actualEnvelope;
     private final AtomicInteger internalStatus;
-    private final AtomicBoolean hasQuantum;
     private final Worker worker;
     private final int dispatcher;
 
@@ -66,7 +59,6 @@ public final class SimpleActor implements IActorRef, IActorContext {
         externalMind = pExternalMind;
         minions = new SimpleMinions(this, system);
         internalStatus = new AtomicInteger(ALIVE);
-        hasQuantum = new AtomicBoolean(false);
         worker = new Worker(this); //TODO: Context must be a separate object from SimpleActor
         dispatcher = system.getDispatcher();
     }

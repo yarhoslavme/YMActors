@@ -3,19 +3,14 @@ package me.yarhoslav.ymactors.core.system;
 import me.yarhoslav.ymactors.core.actors.IActorRef;
 import me.yarhoslav.ymactors.core.actors.NullActor;
 import me.yarhoslav.ymactors.core.actors.SimpleActor;
+import me.yarhoslav.ymactors.core.messages.IEnvelope;
+import me.yarhoslav.ymactors.core.messages.PoisonPill;
 import me.yarhoslav.ymactors.core.minds.DumbMind;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
-import me.yarhoslav.ymactors.core.messages.IEnvelope;
-
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import me.yarhoslav.ymactors.core.messages.PoisonPill;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.*;
 
 /**
  *
@@ -92,7 +87,7 @@ public final class ActorSystem implements ISystem {
             }
             return tmpActor;
         } else {
-            throw new IllegalArgumentException(String.format("Invalid format for Actor's Id: %s", pId));
+            throw new IllegalArgumentException(String.format("Invalid Actor's ID: %s", pId));
         }
     }
 

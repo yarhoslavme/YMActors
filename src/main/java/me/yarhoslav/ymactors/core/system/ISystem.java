@@ -8,26 +8,25 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- *
  * @author yarhoslavme
  */
 public interface ISystem {
 
-    public boolean requestQuantum(int pDispatcher, Runnable pActor);
+    boolean requestQuantum(int pDispatcher, Runnable pActor);
 
-    public String name();
+    String name();
 
-    public void shutdown();
+    void shutdown();
 
-    public IActorRef findActor(String pId) throws IllegalArgumentException;
+    IActorRef findActor(String pId) throws IllegalArgumentException;
 
-    public <E extends SimpleExternalActorMind> IActorRef createActor(E pMinionMind, String pName) throws IllegalArgumentException;
+    <E extends SimpleExternalActorMind> IActorRef createActor(E pMinionMind, String pName) throws IllegalArgumentException;
 
-    public ScheduledFuture schedule(IActorRef pReceiver, IEnvelope pEnvelope, long delay, TimeUnit timeunit);
+    ScheduledFuture schedule(IActorRef pReceiver, IEnvelope pEnvelope, long delay, TimeUnit timeunit);
 
-    public ScheduledFuture scheduleAtFixedRate(IActorRef pReceiver, IEnvelope pEnvelope, long initialDelay, long period, TimeUnit timeunit);
+    ScheduledFuture scheduleAtFixedRate(IActorRef pReceiver, IEnvelope pEnvelope, long initialDelay, long period, TimeUnit timeunit);
 
-    public ScheduledFuture scheduleWithFixedDelay(IActorRef pReceiver, IEnvelope pEnvelope, long initialDelay, long period, TimeUnit timeunit);
-    
-    public int getDispatcher();
+    ScheduledFuture scheduleWithFixedDelay(IActorRef pReceiver, IEnvelope pEnvelope, long initialDelay, long period, TimeUnit timeunit);
+
+    int getDispatcher();
 }

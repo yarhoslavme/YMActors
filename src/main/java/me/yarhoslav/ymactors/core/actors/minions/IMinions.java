@@ -7,23 +7,22 @@ import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 import java.util.Iterator;
 
 /**
- *
  * @author yarhoslavme
  */
 public interface IMinions {
 
-    public <E extends SimpleExternalActorMind> IActorRef add(E pMinionMind, String pName) throws IllegalArgumentException;
+    <E extends SimpleExternalActorMind> IActorRef add(E pMinionMind, String pName) throws IllegalArgumentException;
 
-    public IActorRef find(String pId) throws IllegalArgumentException;
+    IActorRef find(String pId) throws IllegalArgumentException;
 
-    public SimpleActor summon(String pId) throws IllegalArgumentException;
+    SimpleActor summon(String pId) throws IllegalArgumentException;
 
-    public IActorRef remove(IActorRef pMinion) throws IllegalArgumentException;
+    IActorRef remove(IActorRef pMinion) throws IllegalArgumentException;
 
-    public Iterator<SimpleActor> all();
+    Iterator<SimpleActor> all();
 
-    public void removeAll();
-    
-    public int count();
+    void removeAll();
+
+    int count();
 
 }
