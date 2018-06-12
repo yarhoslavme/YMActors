@@ -24,8 +24,8 @@ public final class SimpleMinions implements IMinions {
     public <E extends SimpleExternalActorMind> IActorRef createActor(E pMinionMind, String pName) throws IllegalArgumentException {
         //TODO: Create rule for naming.  Example: Only allow chars 'a'..'z' and numbers '0'..'9'.  Don't allow: /, *, -, +, special chars, etc.
         SimpleActor tmpActor = new SimpleActor(pName, owner, system, pMinionMind);
-        tmpActor.start();
         system.addActor(tmpActor);
+        tmpActor.start();
 
         return tmpActor;
     }
@@ -39,6 +39,6 @@ public final class SimpleMinions implements IMinions {
     @Override
     public Iterator<IActorRef> all() {
 
-        return system.findActors(owner.addr());
+        return null;
     }
 }

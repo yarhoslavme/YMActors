@@ -21,15 +21,13 @@ public interface IActorSystem {
 
     IActorRef findActor(String pAddr) throws IllegalArgumentException;
 
-    Iterator<IActorRef> findActors(String pAddr);
-
     <E extends SimpleExternalActorMind> IActorRef createActor(E pMinionMind, String pName) throws IllegalArgumentException;
 
-    IActorRef addActor(IActorRef pActor) throws IllegalArgumentException;
+    void addActor(IActorRef pActor) throws IllegalArgumentException;
 
-    IActorRef removeActor(IActorRef pActor);
+    void removeActor(IActorRef pActor) throws IllegalArgumentException;;
 
-    ScheduledFuture schedule(IActorRef pReceiver, IEnvelope pEnvelope, long delay, TimeUnit timeunit);
+    ScheduledFuture scheduleOnce(IActorRef pReceiver, IEnvelope pEnvelope, long delay, TimeUnit timeunit);
 
     ScheduledFuture scheduleAtFixedRate(IActorRef pReceiver, IEnvelope pEnvelope, long initialDelay, long period, TimeUnit timeunit);
 
