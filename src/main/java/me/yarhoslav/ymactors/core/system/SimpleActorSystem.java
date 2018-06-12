@@ -90,12 +90,10 @@ public final class SimpleActorSystem implements IActorSystem {
     /**
      * Creates a new actor at top hierarchy level on userspace.
      *
-     * Precondition: 'args' should contain at least one element, the user's name.
-     *
      * @param  pMinionMind      External mind for new actor.
      * @param  pName            Name of the new actor.
      * @return                  Reference to the new actor.
-     * @throws IllegalArgumentException if 'Actor's name' already exists in the system or it is invalid.
+     * @throws IllegalArgumentException if 'pName' already exists or it is invalid.
      */
     @Override
     public <E extends SimpleExternalActorMind> IActorRef createActor(E pMinionMind, String pName) throws IllegalArgumentException {
@@ -107,7 +105,7 @@ public final class SimpleActorSystem implements IActorSystem {
      * Add a given actor into ActorSystem's population.
      *
      * @param  pActor       the given actor reference.
-     * @throws IllegalArgumentException if 'Actor's name' already exists in the system or it is invalid.
+     * @throws IllegalArgumentException if 'pActor' already exists.
      */
     @Override
     public void addActor(IActorRef pActor) throws IllegalArgumentException {
