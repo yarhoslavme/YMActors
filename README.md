@@ -10,4 +10,4 @@ The YMActors project gives you all tools you need to write highly resilient/elas
 ## More information
 [Project website](https://ymactors.info)
 
-[Project Blog](https://yarhoslav.me)
+[Project Blog](https://www.yarhoslav.me)
