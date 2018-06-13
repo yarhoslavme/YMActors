@@ -8,6 +8,6 @@
 The YMActors project gives you all tools you need to write highly resilient/elastic/multithreaded systems, easy and without all the headaches of multithreading programming.  Please, refer to project's documentation for further information.
 
 ## More information
-[Project website](https://ymactors.info)
+[Project Website](https://ymactors.info)
 
 [Project Blog](https://www.yarhoslav.me)
