@@ -125,5 +125,6 @@ Comming soon...
 
 [Yarhoslav's blog](http://yarhoslav.me)
 
-
+<!--
 In heavy development... New features every day!.  Stay tuned. :+1:
+-->
