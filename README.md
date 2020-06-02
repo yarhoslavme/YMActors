@@ -1,3 +1,6 @@
+# NOTE: The latest version of YMACTORS can be found [here](https://gitlab.com/yarhoslavme/YMActors)
+
+
 # YMActors
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/me.yarhoslav/YMActors/badge.svg)](https://maven-badges.herokuapp.com/maven-central/me.yarhoslav/YMActors)
