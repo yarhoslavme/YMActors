@@ -1,8 +1,8 @@
 package me.yarhoslav.ymactors.examples;
 
 import me.yarhoslav.ymactors.core.actors.IActorRef;
-import me.yarhoslav.ymactors.core.system.ActorSystem;
-import me.yarhoslav.ymactors.core.system.ISystem;
+import me.yarhoslav.ymactors.core.system.IActorSystem;
+import me.yarhoslav.ymactors.core.system.SimpleActorSystem;
 
 /**
  *
@@ -11,7 +11,7 @@ import me.yarhoslav.ymactors.core.system.ISystem;
 public class Example2 {
     
     /* Hello world */
-    ISystem system = new ActorSystem("DEMO");
+    IActorSystem system = new SimpleActorSystem("DEMO");
     IActorRef hello = system.createActor(new HelloWorldMind2(), "HELLOWORLD");
 
     public static void main(String[] args) {

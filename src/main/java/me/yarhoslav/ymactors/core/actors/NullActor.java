@@ -3,7 +3,6 @@ package me.yarhoslav.ymactors.core.actors;
 import me.yarhoslav.ymactors.core.messages.IEnvelope;
 
 /**
- *
  * @author yarhoslavme
  */
 public final class NullActor implements IActorRef {
@@ -16,6 +15,7 @@ public final class NullActor implements IActorRef {
 
     @Override
     public void tell(Object pData, IActorRef pSender) {
+        //Null actor can not talk!
     }
 
     @Override
@@ -24,17 +24,14 @@ public final class NullActor implements IActorRef {
 
     @Override
     public String name() {
+
         return NAME;
     }
 
     @Override
-    public String address() {
-        return "";
-    }
+    public String addr() {
 
-    @Override
-    public String id() {
-        return "";
+        return "@";
     }
 
 }

@@ -20,8 +20,8 @@ public class SupervisorMind implements IActorMind {
     public void process() throws Exception {
         if (owner.envelope().message().equals(DeadMsg.INSTANCE)) {
             IActorRef sender = owner.envelope().sender();
-            if (sender.address().equals(owner.id())) {
-                owner.minions().remove(sender);
+            if (sender.addr().equals(owner.addr())) {
+                //owner.minions().remove(sender);
             }
         }
     }

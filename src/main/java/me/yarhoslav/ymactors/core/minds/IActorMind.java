@@ -6,6 +6,6 @@ package me.yarhoslav.ymactors.core.minds;
  */
 public interface IActorMind {
 
-    public void process() throws Exception;
+    void process() throws Exception;
    
 }

@@ -1,8 +1,8 @@
 package me.yarhoslav.ymactors.examples;
 
 import me.yarhoslav.ymactors.core.actors.IActorRef;
-import me.yarhoslav.ymactors.core.system.ActorSystem;
-import me.yarhoslav.ymactors.core.system.ISystem;
+import me.yarhoslav.ymactors.core.system.IActorSystem;
+import me.yarhoslav.ymactors.core.system.SimpleActorSystem;
 
 /**
  *
@@ -12,7 +12,7 @@ public class PingPongExample {
 
     /* Hello world */
     public static void main(String[] args) {
-        ISystem system = new ActorSystem("DEMO");
+        IActorSystem system = new SimpleActorSystem("DEMO");
         IActorRef ping = system.createActor(new Ping(), "PING");
         IActorRef pong = system.createActor(new Pong(), "PONG");
         

@@ -3,77 +3,42 @@ package me.yarhoslav.ymactors.core.actors.minions;
 import me.yarhoslav.ymactors.core.actors.IActorRef;
 import me.yarhoslav.ymactors.core.actors.SimpleActor;
 import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
-import me.yarhoslav.ymactors.core.system.ISystem;
+import me.yarhoslav.ymactors.core.system.IActorSystem;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Iterator;
 
 /**
- *
  * @author yarhoslavme
  */
 public final class SimpleMinions implements IMinions {
 
-    private final Map<String, SimpleActor> minions;
-    private final IActorRef parent;
-    private final ISystem system;
+    private final IActorRef owner;
+    private final IActorSystem system;
 
-    public SimpleMinions(IActorRef pParent, ISystem pSystem) {
-        minions = new ConcurrentHashMap<>();
-        parent = pParent;
+    public SimpleMinions(IActorRef pOwner, IActorSystem pSystem) {
+        owner = pOwner;
         system = pSystem;
     }
 
     @Override
-    public <E extends SimpleExternalActorMind> IActorRef add(E pMinionMind, String pName) throws IllegalArgumentException {
-        SimpleActor tmpActor = new SimpleActor(pName, parent.id(), parent, system, pMinionMind);
-        minions.put(tmpActor.name(), tmpActor);
+    public <E extends SimpleExternalActorMind> IActorRef createActor(E pMinionMind, String pName) throws IllegalArgumentException {
+        //TODO: Create rule for naming.  Example: Only allow chars 'a'..'z' and numbers '0'..'9'.  Don't allow: /, *, -, +, special chars, etc.
+        SimpleActor tmpActor = new SimpleActor(pName, owner, system, pMinionMind);
+        system.addActor(tmpActor);
         tmpActor.start();
+
         return tmpActor;
     }
 
     @Override
     public IActorRef find(String pName) throws IllegalArgumentException {
-        if (!minions.containsKey(pName)) {
-            throw new IllegalArgumentException(String.format("Actor with name:%s doesn't exists in Parent %s", pName, parent.id()));
-        } else {
-            return minions.get(pName);
-        }
+
+        return system.findActor(owner.addr() + "/" + pName);
     }
 
     @Override
-    public SimpleActor summon(String pName) throws IllegalArgumentException {
-        if (!minions.containsKey(pName)) {
-            throw new IllegalArgumentException(String.format("Actor Id:%s doesn't exists in Parent %s", pName, parent.name()));
-        } else {
-            return minions.get(pName);
-        }
-    }
+    public Iterator<IActorRef> all() {
 
-    @Override
-    public IActorRef remove(IActorRef pMinion) throws IllegalArgumentException {
-        if (!minions.containsKey(pMinion.name())) {
-            throw new IllegalArgumentException(String.format("Actor Id:%s doesn't exists in Parent %s", pMinion.name(), parent.name()));
-        } else {
-            return minions.remove(pMinion.name());
-        }
-        
+        return null;
     }
-
-    @Override
-    public Iterator<SimpleActor> all() {
-        return minions.values().iterator();
-    }
-
-    @Override
-    public void removeAll() {
-        minions.clear();
-    }
-
-    @Override
-    public int count() {
-        return minions.size();
-    }
-
 }

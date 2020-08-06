@@ -2,27 +2,20 @@ package me.yarhoslav.ymactors.core.actors;
 
 import me.yarhoslav.ymactors.core.actors.minions.IMinions;
 import me.yarhoslav.ymactors.core.actors.minions.SimpleMinions;
-import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
-import me.yarhoslav.ymactors.core.minds.InternalActorMind;
+import me.yarhoslav.ymactors.core.messages.*;
 import me.yarhoslav.ymactors.core.minds.IActorMind;
+import me.yarhoslav.ymactors.core.minds.InternalActorMind;
+import me.yarhoslav.ymactors.core.minds.SimpleExternalActorMind;
 import me.yarhoslav.ymactors.core.minds.SupervisorMind;
-import me.yarhoslav.ymactors.core.messages.IEnvelope;
-import me.yarhoslav.ymactors.core.messages.NormalPriorityEnvelope;
-import me.yarhoslav.ymactors.core.messages.DeadMsg;
-import me.yarhoslav.ymactors.core.messages.HighPriorityEnvelope;
-import me.yarhoslav.ymactors.core.messages.PoisonPill;
 import me.yarhoslav.ymactors.core.services.BroadcastService;
-import me.yarhoslav.ymactors.core.system.ISystem;
-
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import me.yarhoslav.ymactors.core.system.IActorSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
- *
  * @author yarhoslavme
  */
 public final class SimpleActor implements IActorRef, IActorContext {
@@ -40,33 +33,28 @@ public final class SimpleActor implements IActorRef, IActorContext {
     //TODO: Create a Context class
     private final String name;
     private final String addr;
-    private final String id;
     private final IActorRef parent;
     private final IMinions minions;
-    private final ISystem system;
+    private final IActorSystem system;
     private final IActorMind internalMind;
     private final SimpleExternalActorMind externalMind;
     private final IActorMind supervisorMind;
-    private IEnvelope actualEnvelope;
     private final AtomicInteger internalStatus;
-    private final AtomicBoolean hasQuantum;
     private final Worker worker;
     private final int dispatcher;
+    private IEnvelope actualEnvelope;
 
-    public <E extends SimpleExternalActorMind> SimpleActor(String pName, String pAddr, IActorRef pParent, ISystem pSystem, E pExternalMind) throws IllegalArgumentException {
-        //TODO: Check name and addr constraints and throws Exception
+    public <E extends SimpleExternalActorMind> SimpleActor(String pName, IActorRef pParent, IActorSystem pSystem, E pExternalMind) throws IllegalArgumentException {
         //TODO: Move Mailbox creation out of the actor to allow user changes the type of mailbox.
         name = pName;
-        addr = pAddr;
-        id = addr + "/" + name;
         parent = pParent;
+        addr = parent.addr() + "/" + name;
         system = pSystem;
         internalMind = new InternalActorMind(this);
         supervisorMind = new SupervisorMind(this);
         externalMind = pExternalMind;
         minions = new SimpleMinions(this, system);
         internalStatus = new AtomicInteger(ALIVE);
-        hasQuantum = new AtomicBoolean(false);
         worker = new Worker(this); //TODO: Context must be a separate object from SimpleActor
         dispatcher = system.getDispatcher();
     }
@@ -104,7 +92,7 @@ public final class SimpleActor implements IActorRef, IActorContext {
         try {
             externalMind.beforeStop();
         } catch (Exception e) {
-            logger.warn("An exception occurs stopping actor {}.  Excetion was ignored.", name, e);
+            logger.warn("An exception occurs stopping actor {}.  Exception was ignored.", name, e);
             //TODO: Handle errors.  Put Actor in ERROR internalStatus.  Trigger ERROR procedures.
         } finally {
             worker.stop();
@@ -113,62 +101,66 @@ public final class SimpleActor implements IActorRef, IActorContext {
             BroadcastService broadcast = new BroadcastService(minions.all());
             broadcast.send(new HighPriorityEnvelope(PoisonPill.INSTANCE, this));
 
-            minions.removeAll();
+            //minions.removeAll();
             internalStatus.set(DEAD);
         }
     }
 
     //IActorContext Interface Impelmentation
     @Override
-    public String id() {
-        return id;
-    }
+    public String addr() {
 
-    @Override
-    public String name() {
-        return name;
-    }
-
-    @Override
-    public String address() {
         return addr;
     }
 
     @Override
+    public String name() {
+
+        return name;
+    }
+
+    @Override
     public IActorRef myself() {
+
         return this;
     }
 
     @Override
-    public ISystem system() {
+    public IActorSystem system() {
+
         return system;
     }
 
     @Override
     public IEnvelope envelope() {
+
         return actualEnvelope;
     }
 
     @Override
     public IActorRef parent() {
+
         return parent;
     }
 
     @Override
     public IMinions minions() {
+
         return minions;
     }
 
     @Override
     public int status() {
+
         return internalStatus.get();
     }
 
     @Override
-    public <E extends SimpleExternalActorMind> IActorRef createMinion(E pMinionMind, String pName) {
-        return minions.add(pMinionMind, pName);
+    public <E extends SimpleExternalActorMind> IActorRef createActor(E pMinionMind, String pName) {
+
+        return minions.createActor(pMinionMind, pName);
     }
-    
+
     @Override
     public int dispatcher() {
         return dispatcher;
@@ -209,13 +201,13 @@ public final class SimpleActor implements IActorRef, IActorContext {
             return false;
         }
         final SimpleActor other = (SimpleActor) obj;
-        return Objects.equals(this.id, other.id);
+        return Objects.equals(this.addr, other.addr);
     }
 
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 67 * hash + Objects.hashCode(this.id);
+        hash = 67 * hash + Objects.hashCode(this.addr);
         return hash;
     }
 
